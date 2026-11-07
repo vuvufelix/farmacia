@@ -5,6 +5,7 @@ export class ReportService {
     const startDate = new Date(year, month - 1, 1)
     const endDate = new Date(year, month, 0, 23, 59, 59)
 
+    // 1. Buscar vendas do mês
     const sales = await prisma.sale.findMany({
       where: {
         createdAt: {
@@ -15,6 +16,21 @@ export class ReportService {
       include: {
         user: { select: { name: true, username: true } },
         items: { include: { product: true } }
+      }
+    })
+
+    // 2. Buscar devoluções / trocas do mês para auditoria fiscal e motivos
+    const returns = await prisma.return.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      include: {
+        user: { select: { name: true } },
+        saleItem: { include: { product: true } },
+        sale: { select: { invoiceNumber: true } }
       }
     })
 
@@ -40,7 +56,8 @@ export class ReportService {
       totalRevenue,
       totalTaxCollected,
       salesByOperator,
-      salesDetails: sales
+      salesDetails: sales,
+      returnsDetails: returns // <-- Inclui todas as trocas e motivos catalogados para o fecho fiscal
     }
   }
 }

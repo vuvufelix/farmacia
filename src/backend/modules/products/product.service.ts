@@ -98,4 +98,17 @@ export class ProductService {
       alert90Days
     }
   }
+
+  // No teu product.service.ts ou controller
+  static async deleteProduct(productId: string) {
+    // 1. Apagar primeiro os lotes associados a este produto
+    await prisma.batch.deleteMany({
+      where: { productId }
+    });
+
+    // 2. Apagar itens de venda ou devoluções associadas se necessário, ou apagar o produto diretamente
+    return await prisma.product.delete({
+      where: { id: productId }
+    });
+  }
 }

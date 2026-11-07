@@ -261,12 +261,30 @@
         <!-- TAB: INVENTORY -->
         <section id="tab-inventory" class="hidden space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900">Gestão de Inventário e Lotes (FEFO)</h2>
-            <button onclick="loadInventory()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-              <span>Atualizar Lista</span>
-            </button>
+            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+              <i data-lucide="package" class="w-6 h-6 text-farmGreen-600"></i>
+              <span>Gestão de Inventário e Lotes (FEFO)</span>
+            </h2>
+            <div class="flex items-center space-x-3">
+              <!-- Botão para abrir o Modal de Novo Produto -->
+              <button onclick="openProductModal()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow flex items-center space-x-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Novo Produto</span>
+              </button>
+
+              <!-- NOVO: Botão para filtrar stock baixo -->
+              <button onclick="toggleLowStockFilter()" id="btn-filter-lowstock" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                <span>Stock Baixo</span>
+              </button>
+
+              <!-- Botão de Atualizar Lista -->
+              <button onclick="loadInventory()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"><span>Atualizar</span></i>
+              </button>
+            </div>
           </div>
+
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -277,11 +295,13 @@
                   <th class="p-4">Lote Atual</th>
                   <th class="p-4">Validade</th>
                   <th class="p-4">Qtd. Stock</th>
+                  <th class="p-4 text-right">Ações</th> <!-- NOVA COLUNA -->
                 </tr>
               </thead>
               <tbody id="inventory-table-body" class="divide-y divide-gray-100 text-sm">
                 <!-- Preenchido via JS -->
               </tbody>
+              
             </table>
           </div>
         </section>
@@ -344,6 +364,106 @@
                 </button>
                 </div>
             </div>
+            </div>
+        </div>
+
+        <!-- ================= MODAL DE CADASTRO DE PRODUTO ================= -->
+        <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-gray-100">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-gray-900 text-base flex items-center space-x-2">
+                <i data-lucide="package-plus" class="w-5 h-5 text-farmGreen-600"></i>
+                <span>Cadastrar Novo Produto</span>
+                </h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="product-form" onsubmit="submitNewProduct(event)" class="space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Nome do Medicamento / Produto</label>
+                    <input type="text" id="prod-name" required placeholder="Ex: Ibuprofeno 400mg" class="w-full border border-gray-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Código de Barras (Opcional)</label>
+                    <input type="text" id="prod-code" placeholder="Deixe em branco para gerar auto" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono">
+                </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Categoria</label>
+                    <select id="prod-category" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                    <option value="">A carregar categorias...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Fornecedor</label>
+                    <select id="prod-supplier" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                    <option value="">A carregar fornecedores...</option>
+                    </select>
+                </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Preço de Custo (Kz)</label>
+                    <input type="number" step="0.01" id="prod-cost" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Preço de Venda (Kz)</label>
+                    <input type="number" step="0.01" id="prod-price" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Taxa IVA (ex: 0.14)</label>
+                    <input type="number" step="0.01" id="prod-tax" value="0.14" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Origem</label>
+                    <input type="text" id="prod-origin" value="Importado" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Stock Mínimo</label>
+                    <input type="number" id="prod-minstock" value="10" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                </div>
+                </div>
+
+                <!-- Secção de Lote Inicial (Opcional ou Obrigatório) -->
+                <div class="border-t border-gray-100 pt-3 mt-3">
+                <p class="font-bold text-gray-800 mb-2 flex items-center space-x-1">
+                    <i data-lucide="calendar" class="w-4 h-4 text-farmGreen-600"></i>
+                    <span>Lote Inicial do Medicamento</span>
+                </p>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                    <label class="block font-medium text-gray-700 mb-1">Número do Lote</label>
+                    <input type="text" id="prod-batch" required placeholder="Ex: L-2026-001" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono">
+                    </div>
+                    <div>
+                    <label class="block font-medium text-gray-700 mb-1">Quantidade Inicial</label>
+                    <input type="number" id="prod-qty" required placeholder="50" class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                    <label class="block font-medium text-gray-700 mb-1">Data de Validade</label>
+                    <input type="date" id="prod-expiry" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100">
+                <button type="button" onclick="closeProductModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-xl font-semibold transition shadow">
+                    Guardar Produto
+                </button>
+                </div>
+            </form>
             </div>
         </div>
 
@@ -596,7 +716,11 @@
     // Inicialização de Ícones
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      if (authToken) {
+      
+      const savedToken = localStorage.getItem('token');
+      if (savedToken) {
+        authToken = savedToken;
+        applyUserPermissions(); // Aplica restrições ao recuperar a sessão
         showAppView();
       }
     });
@@ -634,6 +758,10 @@
 
         authToken = data.token;
         localStorage.setItem('token', authToken);
+
+        // Aplicar restrições visuais imediatamente após o login
+        applyUserPermissions();
+
         showAppView();
       } catch (err) {
         errorDiv.textContent = err.message;
@@ -656,23 +784,40 @@
     }
 
     // 1. Atualizar Estatísticas do Dashboard (Incluindo Total de Faturas)
+    // 1. Atualizar Estatísticas do Dashboard (Produtos, Alertas de Validade e Faturas)
     async function loadDashboardData() {
       try {
-        // Carregar Produtos
+        // Carregar Produtos no Catálogo
         const resProd = await fetch(`${API_BASE}/products`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const products = await resProd.json();
-        document.getElementById('stat-products').textContent = products.length || 0;
+        const statProducts = document.getElementById('stat-products');
+        if (statProducts) statProducts.textContent = products.length || 0;
 
-        // Carregar Histórico de Faturas para atualizar o contador no Dashboard
+        // Carregar Alertas FEFO (Lotes a Vencer nos próximos 30 dias)
+        const resAlerts = await fetch(`${API_BASE}/products/alerts/expiration`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (resAlerts.ok) {
+          const alertData = await resAlerts.json();
+          const statAlerts = document.getElementById('stat-alerts');
+          if (statAlerts) {
+            // Conta os lotes no intervalo de 30 dias (onde o lote que expira amanhã se encaixa)
+            statAlerts.textContent = alertData.alert30Days ? alertData.alert30Days.length : 0;
+          }
+        }
+
+        // Carregar Histórico de Faturas do Mês
         const resSales = await fetch(`${API_BASE}/sales`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
         if (resSales.ok) {
           const sales = await resSales.json();
-          document.getElementById('stat-invoices').textContent = sales.length || 0;
+          const statInvoices = document.getElementById('stat-invoices');
+          if (statInvoices) statInvoices.textContent = sales.length || 0;
         }
+
       } catch (e) {
         console.error('Erro ao carregar dados do dashboard:', e);
       }
@@ -683,25 +828,59 @@
         const res = await fetch(`${API_BASE}/products`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
+        
+        if (!res.ok) throw new Error('Falha ao buscar produtos da API');
+        
         const products = await res.json();
         const tbody = document.getElementById('inventory-table-body');
+        
+        if (!tbody) return;
+        
         tbody.innerHTML = '';
+        if (!products || products.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Nenhum produto registado no inventário.</td></tr>`;
+          return;
+        }
+
+        // Garante que verifica o role com segurança sem quebrar se a variável global não existir
+        const isAdmin = typeof currentUserRole !== 'undefined' ? currentUserRole === 'ADMIN' : true; 
 
         products.forEach(p => {
-          const batch = p.batches && p.batches[0] ? p.batches[0] : { batchNumber: 'N/D', expirationDate: 'N/D', quantity: 0 };
+          const activeBatch = p.batches && p.batches.length > 0 ? p.batches[0] : null;
+          const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
+          
+          const batchNumber = activeBatch ? activeBatch.batchNumber : 'Sem Lote';
+          const expiryDate = activeBatch ? new Date(activeBatch.expirationDate).toLocaleDateString('pt-AO') : 'N/D';
+
           tbody.innerHTML += `
-            <tr class="hover:bg-gray-50 transition">
-              <td class="p-4 font-medium text-gray-900">${p.name}</td>
-              <td class="p-4 text-gray-600">${p.category ? p.category.name : 'Geral'}</td>
-              <td class="p-4 text-gray-900 font-semibold">${p.sellingPrice.toLocaleString()} Kz</td>
-              <td class="p-4 text-gray-600">${batch.batchNumber}</td>
-              <td class="p-4 text-gray-600">${new Date(batch.expirationDate).toLocaleDateString()}</td>
-              <td class="p-4"><span class="bg-farmGreen-100 text-farmGreen-800 px-2 py-1 rounded-md font-medium text-xs">${batch.quantity} un</span></td>
+            <tr class="hover:bg-gray-50/50 transition text-xs">
+              <td class="p-4">
+                <p class="font-bold text-gray-900 text-sm">${p.name}</p>
+                <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
+              </td>
+              <td class="p-4 text-gray-600">${p.category ? p.category.name : 'N/D'}</td>
+              <td class="p-4 font-bold text-farmGreen-700">${(p.sellingPrice || 0).toLocaleString()} Kz</td>
+              <td class="p-4 font-mono text-gray-700">${batchNumber}</td>
+              <td class="p-4 text-gray-600">${expiryDate}</td>
+              <td class="p-4 font-semibold text-gray-900">${totalStock} un</td>
+              <td class="p-4 text-right">
+                ${isAdmin ? `
+                  <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition" title="Eliminar Produto">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                ` : `<span class="text-gray-300">-</span>`}
+              </td>
             </tr>
           `;
         });
+        
+        lucide.createIcons();
       } catch (e) {
-        console.error(e);
+        console.error('Erro ao carregar inventário:', e);
+        const tbody = document.getElementById('inventory-table-body');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erro ao carregar dados do inventário.</td></tr>`;
+        }
       }
     }
 
@@ -712,20 +891,58 @@
         });
         const data = await res.json();
         const container = document.getElementById('alerts-container');
+        if (!container) return;
+
+        const expiredList = data.expired || [];
+        const alert30List = data.alert30Days || [];
+        const alert60List = data.alert60Days || [];
+        const alert90List = data.alert90Days || [];
+        const alert60_90List = [...alert60List, ...alert90List];
+
+        // Função auxiliar para criar a lista de itens
+        const renderList = (items) => {
+          if (items.length === 0) return `<p class="text-xs text-gray-400 italic mt-2">Nenhum lote nesta faixa.</p>`;
+          return `
+            <ul class="mt-3 space-y-2 border-t border-gray-100 pt-2 max-h-36 overflow-y-auto">
+              ${items.map(b => `
+                <li class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded-lg">
+                  <div>
+                    <span class="font-bold text-gray-800 block">${b.product?.name || 'Medicamento'}</span>
+                    <span class="font-mono text-gray-500 text-[10px]">Lote: ${b.batchNumber} | Qtd: ${b.quantity} un</span>
+                  </div>
+                  <span class="font-semibold text-gray-700">${new Date(b.expirationDate).toLocaleDateString('pt-AO')}</span>
+                </li>
+              `).join('')}
+            </ul>
+          `;
+        };
+        
         container.innerHTML = `
           <div class="bg-white p-5 rounded-2xl border border-red-100 shadow-sm">
-            <h4 class="font-bold text-red-600 mb-3 flex items-center space-x-2"><i data-lucide="alert-octagon" class="w-5 h-5"></i><span>Expirados / Crítico</span></h4>
-            <p class="text-2xl font-bold text-gray-900">${data.expired ? data.expired.length : 0}</p>
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold text-red-600 flex items-center space-x-2"><i data-lucide="alert-octagon" class="w-5 h-5"></i><span>Expirados / Crítico</span></h4>
+              <p class="text-2xl font-bold text-gray-900">${expiredList.length}</p>
+            </div>
+            ${renderList(expiredList)}
           </div>
+          
           <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-            <h4 class="font-bold text-amber-600 mb-3 flex items-center space-x-2"><i data-lucide="clock" class="w-5 h-5"></i><span>Próximos 30 Dias</span></h4>
-            <p class="text-2xl font-bold text-gray-900">${data.expiringIn30Days ? data.expiringIn30Days.length : 0}</p>
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold text-amber-600 flex items-center space-x-2"><i data-lucide="clock" class="w-5 h-5"></i><span>Próximos 30 Dias</span></h4>
+              <p class="text-2xl font-bold text-gray-900">${alert30List.length}</p>
+            </div>
+            ${renderList(alert30List)}
           </div>
+          
           <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
-            <h4 class="font-bold text-blue-600 mb-3 flex items-center space-x-2"><i data-lucide="calendar" class="w-5 h-5"></i><span>Próximos 60-90 Dias</span></h4>
-            <p class="text-2xl font-bold text-gray-900">${(data.expiringIn60Days?.length || 0) + (data.expiringIn90Days?.length || 0)}</p>
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-bold text-blue-600 flex items-center space-x-2"><i data-lucide="calendar" class="w-5 h-5"></i><span>Próximos 60-90 Dias</span></h4>
+              <p class="text-2xl font-bold text-gray-900">${alert60_90List.length}</p>
+            </div>
+            ${renderList(alert60_90List)}
           </div>
         `;
+        
         lucide.createIcons();
       } catch (e) {
         console.error(e);
@@ -1347,6 +1564,245 @@
       switchTab('returns');
       document.getElementById('return-invoice-number').value = invoiceNumber;
       searchSaleByInvoice(); // Já pesquisa automaticamente
+    }
+
+
+    // Abrir modal de cadastro e carregar selects
+    async function openProductModal() {
+      document.getElementById('product-modal').classList.remove('hidden');
+      await loadCategoriesAndSuppliers();
+      lucide.createIcons();
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    // Buscar categorias e fornecedores da API e preencher os <select>
+    async function loadCategoriesAndSuppliers() {
+      try {
+        const [resCat, resSup] = await Promise.all([
+          fetch(`${API_BASE}/categories`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+          fetch(`${API_BASE}/suppliers`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+        ]);
+
+        const categories = await resCat.json();
+        const suppliers = await resSup.json();
+
+        const catSelect = document.getElementById('prod-category');
+        if (categories && categories.length > 0) {
+          catSelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        } else {
+          catSelect.innerHTML = `<option value="">Nenhuma categoria encontrada</option>`;
+        }
+
+        const supSelect = document.getElementById('prod-supplier');
+        if (suppliers && suppliers.length > 0) {
+          supSelect.innerHTML = suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        } else {
+          supSelect.innerHTML = `<option value="">Nenhum fornecedor encontrado</option>`;
+        }
+      } catch (e) {
+        console.error('Erro ao carregar auxiliares:', e);
+      }
+    }
+
+    // Submeter o formulário de cadastro para a API
+    // Submeter o formulário de cadastro para a API
+    async function submitNewProduct(event) {
+      event.preventDefault();
+      console.log('🚀 A iniciar o envio do formulário de produto...');
+      
+      try {
+        const rawCode = document.getElementById('prod-code').value.trim();
+
+        // 1. Validar e recolher dados do Produto
+        const productPayload = {
+          name: document.getElementById('prod-name').value,
+          code: rawCode !== "" ? rawCode : undefined,
+          categoryId: document.getElementById('prod-category').value,
+          supplierId: document.getElementById('prod-supplier').value || undefined,
+          costPrice: parseFloat(document.getElementById('prod-cost').value),
+          sellingPrice: parseFloat(document.getElementById('prod-price').value),
+          taxRate: parseFloat(document.getElementById('prod-tax').value),
+          origin: document.getElementById('prod-origin').value,
+          minStock: parseInt(document.getElementById('prod-minstock').value)
+        };
+
+        console.log('📦 Payload do produto:', productPayload);
+
+        // Passo A: Criar o Produto
+        const resProduct = await fetch(`${API_BASE}/products`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(productPayload)
+        });
+
+        const productData = await resProduct.json();
+        console.log('📥 Resposta da criação do produto:', productData);
+
+        if (!resProduct.ok) {
+          throw new Error(productData.error || 'Erro ao criar produto no backend');
+        }
+
+        // Passo B: Registar o Lote Inicial
+        const batchNumber = document.getElementById('prod-batch').value.trim();
+        const quantity = parseInt(document.getElementById('prod-qty').value);
+        const expiryDateInput = document.getElementById('prod-expiry').value;
+
+        console.log('🏷️ Dados do lote:', { batchNumber, quantity, expiryDateInput });
+
+        if (batchNumber && quantity && expiryDateInput) {
+          // O Zod espera uma data em formato ISO (datetime). Ex: "2026-12-31T00:00:00.000Z"
+          const isoExpirationDate = new Date(expiryDateInput + 'T00:00:00.000Z').toISOString();
+
+          const batchPayload = {
+            batchNumber,
+            quantity,
+            expirationDate: isoExpirationDate,
+            productId: productData.id
+          };
+
+          const resBatch = await fetch(`${API_BASE}/products/batches`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(batchPayload)
+          });
+
+          const batchData = await resBatch.json();
+          console.log('📥 Resposta do registo de lote:', batchData);
+
+          if (!resBatch.ok) {
+            throw new Error(batchData.error || 'Produto criado, mas houve erro ao registar o lote');
+          }
+        }
+
+        // Sucesso total com Notificação Toast Profissional
+        showToast('Produto e lote cadastrados com sucesso!', 'success');
+        closeProductModal();
+        document.getElementById('product-form').reset();
+        loadInventory();
+        loadDashboardData(); // Atualiza também os contadores e alertas do dashboard instantaneamente
+
+      } catch (e) {
+        console.error('❌ Erro capturado no submit:', e);
+        showToast('Erro ao guardar: ' + e.message, 'error');
+      }
+    }
+
+    // 1. Função centralizada para aplicar restrições visuais baseadas no papel do utilizador
+    function applyUserPermissions() {
+      try {
+        if (!authToken) return;
+        const payloadBase64 = authToken.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        
+        const btnNovoProduto = document.querySelector('button[onclick="openProductModal()"]');
+        if (btnNovoProduto) {
+          if (decodedPayload.role !== 'ADMIN') {
+            btnNovoProduto.style.display = 'none';
+          } else {
+            btnNovoProduto.style.display = 'flex';
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao verificar permissões do token:', e);
+      }
+    }
+
+    // Variável temporária para guardar o ID do produto selecionado para exclusão
+    let productToDeleteId = null;
+
+    async function deleteProduct(productId) {
+      productToDeleteId = productId;
+      
+      // Cria ou reutiliza o modal de confirmação profissional
+      let modalEl = document.getElementById('custom-confirm-modal');
+      if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'custom-confirm-modal';
+        modalEl.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+        modalEl.innerHTML = `
+          <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 transform transition-all animate-in fade-in zoom-in-95">
+            <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Eliminar Produto</h3>
+            <p class="text-sm text-gray-500 text-center mb-6">Tem a certeza de que deseja eliminar este produto e todos os seus lotes associados? Esta ação é irreversível.</p>
+            <div class="flex space-x-3">
+              <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold transition">
+                Cancelar
+              </button>
+              <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-sm">
+                Sim, Eliminar
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modalEl);
+      } else {
+        modalEl.classList.remove('hidden');
+      }
+      
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeConfirmModal() {
+      const modalEl = document.getElementById('custom-confirm-modal');
+      if (modalEl) modalEl.classList.add('hidden');
+      productToDeleteId = null;
+    }
+
+    async function confirmDeleteProduct() {
+      if (!productToDeleteId) return;
+      const productId = productToDeleteId;
+      closeConfirmModal();
+
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        const data = await res.json();
+        
+        // Verifica se a resposta não foi ok e extrai a mensagem de erro com segurança
+        if (!res.ok) {
+          const errorMessage = data.error || data.message || (typeof data === 'string' ? data : 'Erro ao eliminar produto');
+          throw new Error(errorMessage);
+        }
+
+        // Notificação de sucesso elegante com Toast
+        showToast('Produto e lotes associados removidos com sucesso!', 'success');
+        loadInventory();      // Atualiza a tabela de inventário instantaneamente
+        loadDashboardData();  // Atualiza os contadores do dashboard
+      } catch (e) {
+        // Exibe a mensagem exata do erro (ex: violação de chave estrangeira ou restrição)
+        showToast('Não foi possível apagar: ' + e.message, 'error');
+        console.error('Erro na exclusão:', e);
+      } finally {
+        productToDeleteId = null; // Limpa a variável de controlo
+      }
+    }
+
+    // Função auxiliar para exibir notificações Toast profissionais (caso não tenhas uma implementada)
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white transition-all transform translate-y-2 animate-in fade-in slide-in-from-bottom-5 ${type === 'success' ? 'bg-farmGreen-600' : 'bg-red-600'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
     }
   </script>
 </body>

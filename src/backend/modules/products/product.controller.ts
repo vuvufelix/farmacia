@@ -40,4 +40,13 @@ export class ProductController {
       return res.status(500).json({ error: 'Erro ao procurar alertas de caducidade' })
     }
   }
+
+  static async deleteProduct (req: Request, res: Response) {
+    try {
+      await ProductService.deleteProduct(req.params.id);
+      return res.json({ message: 'Produto e lotes associados removidos com sucesso.' });
+    } catch (error) {
+      return res.status(400).json({ error: error });
+    }
+  }
 }

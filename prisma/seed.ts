@@ -19,12 +19,12 @@ async function main() {
 
   const passwordHash = await bcrypt.hash('123456', 10)
 
-  const admin = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: 'Administrador Geral',
       username: 'admin',
       password: passwordHash,
-      role: 'ADMIN' // Substituído de Role.ADMIN para string
+      role: 'ADMIN'
     }
   })
 
@@ -33,7 +33,7 @@ async function main() {
       name: 'Operador de Caixa',
       username: 'caixa1',
       password: passwordHash,
-      role: 'CAIXA' // Substituído de Role.CAIXA para string
+      role: 'CAIXA'
     }
   })
 
@@ -47,8 +47,22 @@ async function main() {
     }
   })
 
+  // ================= CATEGORIAS FARMACÊUTICAS =================
   const catAnalgesicos = await prisma.category.create({ data: { name: 'Analgésicos e Antipiréticos' } })
-  const catAntibioticos = await prisma.category.create({ data: { name: 'Antibióticos' } })
+  const catAntibioticos = await prisma.category.create({ data: { name: 'Antibióticos e Anti-infeciosos' } })
+  const catAntiinflamatorios = await prisma.category.create({ data: { name: 'Anti-inflamatórios (AINEs)' } })
+  const catGastro = await prisma.category.create({ data: { name: 'Gastrointestinais e Antiácidos' } })
+  const catAntialergicos = await prisma.category.create({ data: { name: 'Antialérgicos e Anti-histamínicos' } })
+  const catVitamina = await prisma.category.create({ data: { name: 'Vitaminas, Minerais e Suplementos' } })
+  const catCardio = await prisma.category.create({ data: { name: 'Cardiovasculares e Hipertensão' } })
+  const catRespiratorio = await prisma.category.create({ data: { name: 'Sistema Respiratório e Tosse' } })
+  const catAntimalaricos = await prisma.category.create({ data: { name: 'Antimaláricos' } })
+  const catDermatologico = await prisma.category.create({ data: { name: 'Dermatológicos e Pomadas' } })
+  const catOftalmico = await prisma.category.create({ data: { name: 'Oftálmicos e Gotas Otológicas' } })
+  const catPrimeirosSocorros = await prisma.category.create({ data: { name: 'Primeiros Socorros e Pensos' } })
+  const catInfantil = await prisma.category.create({ data: { name: 'Linha Infantil e Pediátrica' } })
+  const catContraceptivos = await prisma.category.create({ data: { name: 'Contraceptivos e Saúde Sexual' } })
+  const catHigiene = await prisma.category.create({ data: { name: 'Higiene Pessoal e Cuidados Diários' } })
 
   const paracetamol = await prisma.product.create({
     data: {
@@ -128,6 +142,7 @@ async function main() {
 
   console.log('✅ Banco de dados semeado com sucesso!')
   console.log('👤 Utilizador Admin criado: admin / 123456')
+  console.log('💊 15 categorias farmacêuticas injetadas com sucesso.')
   console.log('🔑 Licença inicial de 30 dias gerada e ativada.')
 }
 

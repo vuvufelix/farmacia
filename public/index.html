@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nenova Tech - Gestão de Farmácia Offline</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            farmGreen: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- ================= MODAL PROFISSIONAL ================= -->
+  <div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 transform transition-all scale-100">
+      <div class="flex items-center space-x-3 mb-4">
+        <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center bg-farmGreen-50 text-farmGreen-600">
+          <i id="modal-icon" data-lucide="check-circle" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h3 id="modal-title" class="text-lg font-bold text-gray-900">Mensagem do Sistema</h3>
+          <p class="text-xs text-gray-500">Nenova Tech - Luanda</p>
+        </div>
+      </div>
+      <p id="modal-message" class="text-sm text-gray-600 mb-6 leading-relaxed">Conteúdo da mensagem...</p>
+      <div class="flex justify-end space-x-3">
+        <button onclick="closeModal()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= AUTH VIEW ================= -->
+  <div id="auth-view" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-farmGreen-900 to-farmGreen-700 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-farmGreen-100">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-4 shadow-inner">
+          <i data-lucide="cross" class="w-8 h-8"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">Nenova Tech</h1>
+        <p class="text-sm text-gray-500 mt-1">Sistema de Gestão Farmacêutica Offline (Luanda)</p>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Utilizador</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+              <i data-lucide="user" class="w-5 h-5"></i>
+            </span>
+            <input type="text" id="username" required value="admin" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Palavra-passe</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+              <i data-lucide="lock" class="w-5 h-5"></i>
+            </span>
+            <input type="password" id="password" required value="123456" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-farmGreen-600 hover:bg-farmGreen-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition flex items-center justify-center space-x-2">
+          <span>Entrar no Sistema</span>
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </button>
+      </form>
+      <div id="login-error" class="mt-4 text-center text-sm text-red-600 font-medium hidden"></div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APP VIEW ================= -->
+  <div id="app-view" class="hidden flex-1 flex flex-col">
+    <!-- Top Navbar -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-farmGreen-600 text-white rounded-lg flex items-center justify-center shadow">
+            <i data-lucide="activity" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="font-bold text-lg text-gray-900">Nenova Tech</span>
+            <span class="text-xs bg-farmGreen-100 text-farmGreen-800 px-2 py-0.5 rounded-full ml-2 font-medium">Offline Mode</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div id="license-badge" class="flex items-center space-x-2 text-xs bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <span id="license-status-text" class="font-medium text-gray-700">Licença Ativa (10.000 Kz/mês)</span>
+          </div>
+          <div class="border-l border-gray-200 h-6"></div>
+          <div class="flex items-center space-x-2">
+            <span id="user-display" class="text-sm font-semibold text-gray-700">Operador</span>
+            <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100 transition" title="Terminar Sessão">
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 flex max-w-7xl w-full mx-auto">
+      <!-- Sidebar Navigation -->
+      <aside class="w-64 bg-white border-r border-gray-200 p-4 space-y-1 hidden md:block">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-farmGreen-50 text-farmGreen-700 transition">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="package" class="w-5 h-5"></i>
+          <span>Inventário & Lotes</span>
+        </button>
+        <button onclick="switchTab('alerts')" id="nav-alerts" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          <span>Alertas de Validade</span>
+        </button>
+        <button onclick="switchTab('pos')" id="nav-pos" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+          <span>PDV / Caixa (AGT)</span>
+        </button>
+        <button onclick="switchTab('suppliers')" id="nav-suppliers" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="truck" class="w-5 h-5"></i>
+          <span>Fornecedores (Shalina)</span>
+        </button>
+        <button onclick="switchTab('returns')" id="nav-returns" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+          <span>Trocas & Devoluções</span>
+        </button>
+        <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="history" class="w-5 h-5"></i>
+          <span>Histórico de Vendas</span>
+        </button>
+        <button onclick="switchTab('reports')" id="nav-reports" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+          <i data-lucide="file-text" class="w-5 h-5"></i>
+          <span>Relatórios Fiscais</span>
+        </button>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="flex-1 p-6 overflow-y-auto">
+
+        <!-- TAB: DASHBOARD -->
+        <section id="tab-dashboard" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Produtos no Catálogo</p>
+                <h3 id="stat-products" class="text-2xl font-bold text-gray-900 mt-1">--</h3>
+              </div>
+              <div class="w-12 h-12 bg-farmGreen-50 text-farmGreen-600 rounded-xl flex items-center justify-center">
+                <i data-lucide="box" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Lotes a Vencer (30d)</p>
+                <h3 id="stat-alerts" class="text-2xl font-bold text-amber-600 mt-1">--</h3>
+              </div>
+              <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                <i data-lucide="clock" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Faturas Emitidas Mês</p>
+                <h3 id="stat-invoices" class="text-2xl font-bold text-gray-900 mt-1">--</h3>
+              </div>
+              <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <i data-lucide="receipt" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Estado da Licença</p>
+                <h3 class="text-sm font-bold text-farmGreen-700 mt-1 uppercase bg-farmGreen-50 px-2.5 py-1 rounded-md inline-block">Ativa / 10k Kz</h3>
+              </div>
+              <div class="w-12 h-12 bg-farmGreen-100 text-farmGreen-700 rounded-xl flex items-center justify-center">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 class="font-bold text-gray-900 mb-4 flex items-center justify-between">
+                <span>Evolução de Vendas (Kz)</span>
+                <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400"></i>
+              </h3>
+              <div class="h-64 flex items-center justify-center">
+                <canvas id="salesChart"></canvas>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 class="font-bold text-gray-900 mb-4 flex items-center justify-between">
+                <span>Distribuição de Stock por Categoria</span>
+                <i data-lucide="pie-chart" class="w-5 h-5 text-gray-400"></i>
+              </h3>
+              <div class="h-64 flex items-center justify-center">
+                <canvas id="stockChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: INVENTORY -->
+        <section id="tab-inventory" class="hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900">Gestão de Inventário e Lotes (FEFO)</h2>
+            <button onclick="loadInventory()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Atualizar Lista</span>
+            </button>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th class="p-4">Produto</th>
+                  <th class="p-4">Categoria</th>
+                  <th class="p-4">Preço Venda</th>
+                  <th class="p-4">Lote Atual</th>
+                  <th class="p-4">Validade</th>
+                  <th class="p-4">Qtd. Stock</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body" class="divide-y divide-gray-100 text-sm">
+                <!-- Preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB: ALERTS -->
+        <section id="tab-alerts" class="hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900">Painel de Alertas de Caducidade (30 / 60 / 90 dias)</h2>
+            <button onclick="loadExpirationAlerts()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Verificar Validades</span>
+            </button>
+          </div>
+          <div id="alerts-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Preenchido via JS -->
+          </div>
+        </section>
+
+        <!-- ================= MODAL DE IMPRESSÃO DA FATURA (TALÃO AGT) ================= -->
+        <div id="invoice-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 flex flex-col items-center">
+            <!-- Cabeçalho da Fatura -->
+            <div class="text-center space-y-1 mb-4 border-b border-dashed border-gray-300 pb-4 w-full">
+                <div class="inline-flex items-center justify-center w-10 h-10 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-1">
+                <i data-lucide="cross" class="w-5 h-5"></i>
+                </div>
+                <h2 class="font-bold text-gray-900 text-base">FARMÁCIA NENOVA TECH</h2>
+                <p class="text-xs text-gray-500">NIF: 5412345678 | Luanda - Angola</p>
+                <p class="text-xs font-semibold text-farmGreen-700 mt-1 uppercase" id="inv-modal-number">FR FMN2026/0000</p>
+                <p class="text-[10px] text-gray-400" id="inv-modal-date">07/11/2026 00:00</p>
+            </div>
+
+            <!-- Detalhes dos Itens -->
+            <div class="w-full text-xs space-y-2 mb-4 border-b border-dashed border-gray-300 pb-4 max-h-48 overflow-y-auto" id="inv-modal-items">
+                <!-- Itens inseridos dinamicamente -->
+            </div>
+
+            <!-- Resumo Financeiro -->
+            <div class="w-full text-xs space-y-1 mb-4 border-b border-dashed border-gray-300 pb-4">
+                <div class="flex justify-between text-gray-600"><span>Subtotal:</span><span id="inv-modal-subtotal">0 Kz</span></div>
+                <div class="flex justify-between text-gray-600"><span>IVA (14%):</span><span id="inv-modal-tax">0 Kz</span></div>
+                <div class="flex justify-between font-bold text-gray-900 text-sm pt-1"><span>Total Pago:</span><span id="inv-modal-total" class="text-farmGreen-700">0 Kz</span></div>
+                <div class="flex justify-between text-[11px] text-gray-500 pt-1"><span>Pagamento:</span><span id="inv-modal-method" class="font-medium">MULTICAIXA</span></div>
+            </div>
+
+            <!-- Assinatura Fiscal / QR Code AGT -->
+            <div class="text-center space-y-2 w-full">
+                <div class="bg-gray-100 p-2 rounded-lg font-mono text-[9px] text-gray-500 break-all" id="inv-modal-hash">
+                Hash: XXXX-XXXX-XXXX-XXXX
+                </div>
+                <p class="text-[10px] text-gray-400">Processado por programa certificado nº 000/AGT/2026</p>
+                
+                <div class="flex space-x-2 pt-2">
+                <button onclick="window.print()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir</span>
+                </button>
+                <button onclick="closeInvoiceModal()" class="flex-1 bg-farmGreen-600 hover:bg-farmGreen-700 text-white py-2 rounded-xl text-xs font-semibold transition">
+                    Fechar
+                </button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- TAB: PDV / SALES (AUTOMATIZADO - SEM UUIDs) -->
+        <section id="tab-pos" class="hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 text-lg">Ponto de Venda - PDV (Caixa)</h3>
+                <span id="logged-operator-badge" class="text-xs bg-farmGreen-100 text-farmGreen-800 px-3 py-1 rounded-full font-medium">Caixa Ativo</span>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Método de Pagamento</label>
+                  <select id="pos-payment-method" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                    <option value="MONEY">Numerário (Dinheiro)</option>
+                    <option value="MULTICAIXA" selected>Multicaixa (TPA)</option>
+                    <option value="TRANSFER">Transferência Bancária</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Documento Fiscal</label>
+                  <input type="text" disabled value="AGT - Fatura Recibo (FR)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm text-gray-500">
+                </div>
+              </div>
+
+              <div class="border-t border-gray-100 pt-4 space-y-3">
+                <h4 class="font-semibold text-gray-800 text-sm">Selecionar Medicamento (FEFO Automático)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div class="md:col-span-2">
+                    <select id="pos-product-select" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                      <option value="">A carregar medicamentos...</option>
+                    </select>
+                  </div>
+                  <div>
+                    <input type="number" id="pos-quantity" min="1" value="1" placeholder="Qtd" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                  </div>
+                </div>
+                <button onclick="addItemToCart()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Adicionar ao Carrinho</span>
+                </button>
+              </div>
+
+              <div class="border-t border-gray-100 pt-4">
+                <h4 class="font-semibold text-gray-800 text-sm mb-2">Itens Selecionados</h4>
+                <div id="cart-items-list" class="space-y-2 text-sm text-gray-600 bg-gray-50 p-4 rounded-xl min-h-[120px] max-h-[220px] overflow-y-auto">
+                  Nenhum item adicionado.
+                </div>
+              </div>
+            </div>
+
+            <!-- POS Summary & Submit -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-6">
+              <div>
+                <h3 class="font-bold text-gray-900 text-lg mb-4">Resumo da Fatura</h3>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between text-gray-600">
+                    <span>Subtotal:</span>
+                    <span id="pos-subtotal">0.00 Kz</span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span>IVA (14%):</span>
+                    <span id="pos-tax">0.00 Kz</span>
+                  </div>
+                  <div class="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900 text-base">
+                    <span>Total Líquido:</span>
+                    <span id="pos-total" class="text-farmGreen-600">0.00 Kz</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onclick="submitSale()" class="w-full bg-farmGreen-600 hover:bg-farmGreen-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-base">
+                <i data-lucide="printer" class="w-5 h-5"></i>
+                <span>Finalizar Venda (Emitir FR)</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: SUPPLIERS -->
+        <section id="tab-suppliers" class="hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900">Automação de Pedidos (Shalina Healthcare & Fornecedores)</h2>
+            <button onclick="generateShalinaOrder()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+              <span>Gerar Encomenda WhatsApp</span>
+            </button>
+          </div>
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+            <p class="text-sm text-gray-600">Clique no botão acima para verificar os produtos abaixo do stock mínimo e gerar automaticamente a mensagem formatada para envio direto via WhatsApp para a <strong>Shalina Healthcare</strong>.</p>
+            <div id="supplier-order-result" class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm font-mono text-gray-700 hidden whitespace-pre-line"></div>
+          </div>
+        </section>
+
+        <!-- TAB: RETURNS (ATUALIZADO - PESQUISA POR NÚMERO DE FATURA) -->
+        <section id="tab-returns" class="hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-xl mx-auto space-y-4">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+              <i data-lucide="rotate-ccw" class="w-6 h-6 text-farmGreen-600"></i>
+              <span>Processar Troca ou Devolução</span>
+            </h2>
+            <p class="text-xs text-gray-500">Insira o número da fatura (ex: FR FMN2026/0001) para carregar os itens e proceder ao reembolso ou troca sem códigos complexos.</p>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Número da Fatura</label>
+              <div class="flex space-x-2">
+                <input type="text" id="return-invoice-number" placeholder="Ex: FR FMN2026/0001" class="flex-1 border border-gray-300 rounded-lg p-2.5 text-sm uppercase font-mono">
+                <button onclick="searchSaleByInvoice()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition shadow">
+                  Pesquisar Fatura
+                </button>
+              </div>
+            </div>
+
+            <div id="return-items-container" class="hidden space-y-3 border-t border-gray-100 pt-4">
+              <div class="bg-farmGreen-50 p-3 rounded-xl border border-farmGreen-100 text-xs text-farmGreen-800 flex justify-between items-center">
+                <span id="return-sale-info">Fatura carregada com sucesso.</span>
+                <span id="return-operator-info" class="font-semibold"></span>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Selecione o Medicamento a Devolver</label>
+                <select id="return-item-select" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
+                  <!-- Preenchido dinamicamente -->
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Quantidade a Devolver</label>
+                <input type="number" id="return-qty" min="1" value="1" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Motivo da Troca / Reembolso</label>
+                <textarea id="return-reason" placeholder="Ex: Produto com embalagem danificada ou troca por engano" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm" rows="3"></textarea>
+              </div>
+
+              <button onclick="submitReturnSmart()" class="w-full bg-farmGreen-600 hover:bg-farmGreen-700 text-white font-semibold py-3 rounded-xl transition shadow flex items-center justify-center space-x-2">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                <span>Confirmar Devolução e Repor Stock</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: HISTORY (HISTÓRICO DE VENDAS) -->
+        <section id="tab-history" class="hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+              <i data-lucide="history" class="w-6 h-6 text-farmGreen-600"></i>
+              <span>Histórico de Vendas & Faturas Emitidas</span>
+            </h2>
+            <button onclick="loadSalesHistory()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Atualizar Histórico</span>
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th class="p-4">Nº da Fatura</th>
+                  <th class="p-4">Data / Hora</th>
+                  <th class="p-4">Operador</th>
+                  <th class="p-4">Pagamento</th>
+                  <th class="p-4">Total (Kz)</th>
+                  <th class="p-4 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body" class="divide-y divide-gray-100 text-sm">
+                <!-- Preenchido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB: REPORTS (RELATÓRIO FISCAL AGT) -->
+        <section id="tab-reports" class="hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+              <i data-lucide="file-text" class="w-6 h-6 text-farmGreen-600"></i>
+              <span>Relatório Fiscal Mensal (AGT - IVA e Vendas)</span>
+            </h2>
+            <div class="flex items-center space-x-3">
+              <select id="report-month" class="border border-gray-300 rounded-lg p-2 text-sm bg-white">
+                <option value="11" selected>Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+              <select id="report-year" class="border border-gray-300 rounded-lg p-2 text-sm bg-white">
+                <option value="2026" selected>2026</option>
+              </select>
+              <button onclick="loadMonthlyReport()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow flex items-center space-x-2">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                <span>Gerar Relatório</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contentor do Relatório (Com suporte para impressão) -->
+          <div id="report-result-container" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <p class="text-sm text-gray-500 text-center py-12">Selecione o período e clique em "Gerar Relatório" para visualizar o fecho fiscal consolidado e detalhado.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic & API Integration -->
+  <script>
+    const API_BASE = 'http://localhost:3333/api';
+    let authToken = localStorage.getItem('token') || '';
+    let availableProductsData = [];
+    let cartItems = [];
+
+    // Sistema de Modal Profissional
+    function showModal(title, message, isError = false) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      const iconContainer = document.getElementById('modal-icon-container');
+      const icon = document.getElementById('modal-icon');
+
+      if (isError) {
+        iconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-red-50 text-red-600';
+        icon.setAttribute('data-lucide', 'alert-circle');
+      } else {
+        iconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-farmGreen-50 text-farmGreen-600';
+        icon.setAttribute('data-lucide', 'check-circle');
+      }
+
+      document.getElementById('app-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('app-modal').classList.add('hidden');
+    }
+
+    // Inicialização de Ícones
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      if (authToken) {
+        showAppView();
+      }
+    });
+
+    function switchTab(tabId) {
+      ['dashboard', 'inventory', 'alerts', 'pos', 'suppliers', 'returns', 'reports'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`)?.classList.remove('bg-farmGreen-50', 'text-farmGreen-700');
+        document.getElementById(`nav-${t}`)?.classList.add('text-gray-600', 'hover:bg-gray-50');
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`nav-${tabId}`)?.classList.add('bg-farmGreen-50', 'text-farmGreen-700');
+      document.getElementById(`nav-${tabId}`)?.classList.remove('text-gray-600', 'hover:bg-gray-50');
+
+      if (tabId === 'dashboard') loadDashboardData();
+      if (tabId === 'inventory') loadInventory();
+      if (tabId === 'alerts') loadExpirationAlerts();
+      if (tabId === 'pos') loadPosProducts();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('login-error');
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao autenticar');
+
+        authToken = data.token;
+        localStorage.setItem('token', authToken);
+        showAppView();
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      authToken = '';
+      document.getElementById('app-view').classList.add('hidden');
+      document.getElementById('auth-view').classList.remove('hidden');
+    }
+
+    function showAppView() {
+      document.getElementById('auth-view').classList.add('hidden');
+      document.getElementById('app-view').classList.remove('hidden');
+      loadDashboardData();
+      initCharts();
+    }
+
+    // 1. Atualizar Estatísticas do Dashboard (Incluindo Total de Faturas)
+    async function loadDashboardData() {
+      try {
+        // Carregar Produtos
+        const resProd = await fetch(`${API_BASE}/products`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const products = await resProd.json();
+        document.getElementById('stat-products').textContent = products.length || 0;
+
+        // Carregar Histórico de Faturas para atualizar o contador no Dashboard
+        const resSales = await fetch(`${API_BASE}/sales`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (resSales.ok) {
+          const sales = await resSales.json();
+          document.getElementById('stat-invoices').textContent = sales.length || 0;
+        }
+      } catch (e) {
+        console.error('Erro ao carregar dados do dashboard:', e);
+      }
+    }
+
+    async function loadInventory() {
+      try {
+        const res = await fetch(`${API_BASE}/products`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const products = await res.json();
+        const tbody = document.getElementById('inventory-table-body');
+        tbody.innerHTML = '';
+
+        products.forEach(p => {
+          const batch = p.batches && p.batches[0] ? p.batches[0] : { batchNumber: 'N/D', expirationDate: 'N/D', quantity: 0 };
+          tbody.innerHTML += `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="p-4 font-medium text-gray-900">${p.name}</td>
+              <td class="p-4 text-gray-600">${p.category ? p.category.name : 'Geral'}</td>
+              <td class="p-4 text-gray-900 font-semibold">${p.sellingPrice.toLocaleString()} Kz</td>
+              <td class="p-4 text-gray-600">${batch.batchNumber}</td>
+              <td class="p-4 text-gray-600">${new Date(batch.expirationDate).toLocaleDateString()}</td>
+              <td class="p-4"><span class="bg-farmGreen-100 text-farmGreen-800 px-2 py-1 rounded-md font-medium text-xs">${batch.quantity} un</span></td>
+            </tr>
+          `;
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadExpirationAlerts() {
+      try {
+        const res = await fetch(`${API_BASE}/products/alerts/expiration`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        const container = document.getElementById('alerts-container');
+        container.innerHTML = `
+          <div class="bg-white p-5 rounded-2xl border border-red-100 shadow-sm">
+            <h4 class="font-bold text-red-600 mb-3 flex items-center space-x-2"><i data-lucide="alert-octagon" class="w-5 h-5"></i><span>Expirados / Crítico</span></h4>
+            <p class="text-2xl font-bold text-gray-900">${data.expired ? data.expired.length : 0}</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
+            <h4 class="font-bold text-amber-600 mb-3 flex items-center space-x-2"><i data-lucide="clock" class="w-5 h-5"></i><span>Próximos 30 Dias</span></h4>
+            <p class="text-2xl font-bold text-gray-900">${data.expiringIn30Days ? data.expiringIn30Days.length : 0}</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+            <h4 class="font-bold text-blue-600 mb-3 flex items-center space-x-2"><i data-lucide="calendar" class="w-5 h-5"></i><span>Próximos 60-90 Dias</span></h4>
+            <p class="text-2xl font-bold text-gray-900">${(data.expiringIn60Days?.length || 0) + (data.expiringIn90Days?.length || 0)}</p>
+          </div>
+        `;
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Carregar produtos no PDV automaticamente (Sem UUID manual)
+    async function loadPosProducts() {
+      try {
+        const res = await fetch(`${API_BASE}/products`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        availableProductsData = await res.json();
+        const select = document.getElementById('pos-product-select');
+        select.innerHTML = '<option value="">-- Selecione um medicamento --</option>';
+
+        availableProductsData.forEach(p => {
+          const batch = p.batches && p.batches[0] ? p.batches[0] : null;
+          const stockQty = batch ? batch.quantity : 0;
+          
+          select.innerHTML += `
+            <option value="${p.id}" data-price="${p.sellingPrice}" data-batch="${batch ? batch.id : ''}">
+              ${p.name} - ${p.sellingPrice.toLocaleString()} Kz (Stock: ${stockQty} un)
+            </option>
+          `;
+        });
+      } catch (e) {
+        console.error('Erro ao carregar produtos', e);
+      }
+    }
+
+    function addItemToCart() {
+      const select = document.getElementById('pos-product-select');
+      const selectedOption = select.options[select.selectedIndex];
+      const productId = select.value;
+
+      if (!productId) {
+        showModal('Atenção', 'Por favor, selecione um medicamento da lista.', true);
+        return;
+      }
+
+      const batchId = selectedOption.getAttribute('data-batch');
+      if (!batchId) {
+        showModal('Stock Indisponível', 'Este produto não possui lotes ativos no stock.', true);
+        return;
+      }
+
+      const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
+      const quantity = parseInt(document.getElementById('pos-quantity').value) || 1;
+      
+      const productObj = availableProductsData.find(p => p.id === productId);
+      const productName = productObj ? productObj.name : 'Produto';
+
+      const existing = cartItems.find(item => item.productId === productId && item.batchId === batchId);
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        cartItems.push({ productId, batchId, productName, unitPrice, quantity });
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const list = document.getElementById('cart-items-list');
+      if (cartItems.length === 0) {
+        list.innerHTML = 'Nenhum item adicionado.';
+        document.getElementById('pos-subtotal').textContent = '0.00 Kz';
+        document.getElementById('pos-tax').textContent = '0.00 Kz';
+        document.getElementById('pos-total').textContent = '0.00 Kz';
+        return;
+      }
+
+      let subtotalSum = 0;
+      let taxSum = 0;
+
+      list.innerHTML = cartItems.map((item, idx) => {
+        const itemTotal = item.unitPrice * item.quantity;
+        const itemTax = itemTotal * 0.14;
+        const itemSub = itemTotal - itemTax;
+        subtotalSum += itemSub;
+        taxSum += itemTax;
+
+        return `
+          <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm">
+            <div>
+              <span class="font-semibold text-gray-900">${item.productName}</span>
+              <div class="text-xs text-gray-500">Qtd: ${item.quantity} x ${item.unitPrice.toLocaleString()} Kz</div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <span class="font-bold text-gray-800">${itemTotal.toLocaleString()} Kz</span>
+              <button onclick="cartItems.splice(${idx},1);renderCart();" class="text-red-500 hover:text-red-700 p-1">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const totalSum = subtotalSum + taxSum;
+      document.getElementById('pos-subtotal').textContent = subtotalSum.toLocaleString() + ' Kz';
+      document.getElementById('pos-tax').textContent = taxSum.toLocaleString() + ' Kz';
+      document.getElementById('pos-total').textContent = totalSum.toLocaleString() + ' Kz';
+      lucide.createIcons();
+    }
+
+    // 2. Finalizar Venda e Exibir a Fatura AGT Emitida
+    async function submitSale() {
+      const paymentMethod = document.getElementById('pos-payment-method').value;
+      if (cartItems.length === 0) {
+        showModal('Carrinho Vazio', 'Adicione pelo menos um produto antes de finalizar a venda.', true);
+        return;
+      }
+
+      try {
+        const payloadBase64 = authToken.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        const userId = decodedPayload.id;
+
+        const res = await fetch(`${API_BASE}/sales`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            userId,
+            paymentMethod,
+            items: cartItems.map(i => ({ productId: i.productId, batchId: i.batchId, quantity: i.quantity }))
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao processar venda');
+
+        // Limpar carrinho e atualizar produtos/dashboard
+        cartItems = [];
+        renderCart();
+        loadPosProducts();
+        loadDashboardData();
+
+        // Abrir o Talão de Fatura Emitida
+        openInvoiceModal(data);
+      } catch (e) {
+        showModal('Erro na Venda', e.message, true);
+      }
+    }
+
+    // 3. Abrir e Preencher o Modal da Fatura
+    function openInvoiceModal(saleData) {
+      document.getElementById('inv-modal-number').textContent = saleData.invoiceNumber;
+      document.getElementById('inv-modal-date').textContent = new Date(saleData.createdAt).toLocaleString();
+      document.getElementById('inv-modal-subtotal').textContent = (saleData.subtotal || 0).toLocaleString() + ' Kz';
+      document.getElementById('inv-modal-tax').textContent = (saleData.taxTotal || 0).toLocaleString() + ' Kz';
+      document.getElementById('inv-modal-total').textContent = (saleData.total || 0).toLocaleString() + ' Kz';
+      document.getElementById('inv-modal-method').textContent = saleData.paymentMethod;
+      document.getElementById('inv-modal-hash').textContent = `Hash AGT: ${saleData.hash || 'N/A'}`;
+
+      const itemsContainer = document.getElementById('inv-modal-items');
+      itemsContainer.innerHTML = '';
+      
+      if (saleData.items) {
+        saleData.items.forEach(item => {
+          const prodName = item.product ? item.product.name : 'Medicamento';
+          itemsContainer.innerHTML += `
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="font-semibold text-gray-800">${prodName}</p>
+                <p class="text-[10px] text-gray-400">${item.quantity}x ${item.unitPrice.toLocaleString()} Kz</p>
+              </div>
+              <span class="font-bold text-gray-900">${(item.total || (item.unitPrice * item.quantity)).toLocaleString()} Kz</span>
+            </div>
+          `;
+        });
+      }
+
+      document.getElementById('invoice-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeInvoiceModal() {
+      document.getElementById('invoice-modal').classList.add('hidden');
+    }
+
+    async function generateShalinaOrder() {
+      const supplierId = '75c3f630-e05f-43e3-a2a3-b15c2742883a';
+      try {
+        const res = await fetch(`${API_BASE}/suppliers/${supplierId}/generate-order`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        
+        const box = document.getElementById('supplier-order-result');
+
+        // Se não houver itens abaixo do stock mínimo
+        if (!data.hasItems) {
+          showModal('Stock Regular', data.message || 'Não há produtos abaixo do stock mínimo para este fornecedor.');
+          box.classList.add('hidden');
+          return;
+        }
+
+        // Se houver itens, exibe o texto formatado e disponibiliza o link do WhatsApp
+        let outputHtml = `<p class="font-bold text-farmGreen-800 mb-2">✅ Encomenda Pronta para Envio:</p>`;
+        outputHtml += `<p class="whitespace-pre-line mb-3">${data.whatsappMessage || ''}</p>`;
+        
+        if (data.whatsappUrl) {
+          outputHtml += `
+            <a href="${data.whatsappUrl}" target="_blank" class="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+              <span>Abrir Conversa no WhatsApp</span>
+            </a>
+          `;
+        }
+
+        box.innerHTML = outputHtml;
+        box.classList.remove('hidden');
+        lucide.createIcons();
+      } catch (e) {
+        showModal('Erro', 'Não foi possível gerar a encomenda para o fornecedor.', true);
+      }
+    }
+
+    async function submitReturn() {
+      const saleId = document.getElementById('return-sale-id').value;
+      const saleItemId = document.getElementById('return-item-id').value;
+      const quantity = parseInt(document.getElementById('return-qty').value);
+      const reason = document.getElementById('return-reason').value;
+
+      try {
+        const payloadBase64 = authToken.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        const userId = decodedPayload.id;
+
+        const res = await fetch(`${API_BASE}/sales/returns`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ saleId, saleItemId, userId, quantity, reason })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao processar devolução');
+        
+        showModal('Sucesso', 'Devolução processada com sucesso e stock reposto no lote!');
+      } catch (e) {
+        showModal('Erro', e.message, true);
+      }
+    }
+
+    async function loadMonthlyReport() {
+      const month = document.getElementById('report-month').value;
+      const year = document.getElementById('report-year').value;
+      
+      try {
+        const res = await fetch(`${API_BASE}/reports/monthly?year=${year}&month=${month}`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao carregar relatório fiscal');
+
+        const container = document.getElementById('report-result-container');
+        
+        // Formatar operadores para exibição em lista
+        let operatorsHtml = '';
+        if (data.salesByOperator) {
+          for (const [opName, info] of Object.entries(data.salesByOperator)) {
+            operatorsHtml += `
+              <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex justify-between items-center">
+                <div>
+                  <span class="font-bold text-gray-900">${opName}</span>
+                  <p class="text-xs text-gray-500">Faturas emitidas: ${info.count}</p>
+                </div>
+                <span class="font-bold text-farmGreen-700">${info.total.toLocaleString()} Kz</span>
+              </div>
+            `;
+          }
+        }
+
+        // Formatar detalhes das faturas e itens (ex: Amoxicilina)
+        let detailsHtml = '';
+        if (data.salesDetails && data.salesDetails.length > 0) {
+          data.salesDetails.forEach(sale => {
+            const dateStr = new Date(sale.createdAt).toLocaleString();
+            let itemsRows = '';
+            
+            sale.items.forEach(item => {
+              const prodName = item.product ? item.product.name : 'Produto';
+              itemsRows += `
+                <tr class="text-xs border-b border-gray-100 bg-gray-50/50">
+                  <td class="p-2.5 font-medium text-gray-800">${prodName}</td>
+                  <td class="p-2.5 text-center">${item.quantity} un</td>
+                  <td class="p-2.5 text-right">${item.unitPrice.toLocaleString()} Kz</td>
+                  <td class="p-2.5 text-right text-blue-600">${(item.taxAmount || 0).toLocaleString()} Kz (14%)</td>
+                  <td class="p-2.5 text-right font-bold text-gray-900">${item.total.toLocaleString()} Kz</td>
+                </tr>
+              `;
+            });
+
+            detailsHtml += `
+              <div class="border border-gray-200 rounded-xl overflow-hidden mb-4 shadow-sm">
+                <div class="bg-gray-100 p-3.5 flex justify-between items-center text-xs font-semibold text-gray-700">
+                  <div>
+                    <span class="font-mono font-bold text-farmGreen-800 text-sm">${sale.invoiceNumber}</span>
+                    <span class="ml-3 text-gray-500">${dateStr}</span>
+                  </div>
+                  <div>
+                    <span class="bg-white px-2.5 py-1 rounded border border-gray-200 font-medium">Operador: ${sale.user ? sale.user.name : 'N/D'}</span>
+                    <span class="ml-2 bg-farmGreen-100 text-farmGreen-800 px-2.5 py-1 rounded">Total: ${sale.total.toLocaleString()} Kz</span>
+                  </div>
+                </div>
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-[11px] font-bold text-gray-400 uppercase bg-gray-50 border-b border-gray-200">
+                      <th class="p-2.5">Medicamento / Artigo</th>
+                      <th class="p-2.5 text-center">Qtd</th>
+                      <th class="p-2.5 text-right">Preço Unit.</th>
+                      <th class="p-2.5 text-right">IVA (14%)</th>
+                      <th class="p-2.5 text-right">Total Item</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${itemsRows}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          });
+        } else {
+          detailsHtml = `<p class="text-xs text-gray-400 text-center py-4">Sem detalhes de faturas para este período.</p>`;
+        }
+
+        // Montar estrutura visual completa
+        container.innerHTML = `
+          <!-- Cabeçalho com Botão de Impressão -->
+          <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+            <div>
+              <h3 class="font-bold text-gray-900 text-lg">Fecho Fiscal Consolidado — Período: ${data.period}</h3>
+              <p class="text-xs text-gray-500">Nenova Tech — Sistema Certificado AGT</p>
+            </div>
+            <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>Imprimir Relatório Oficial</span>
+            </button>
+          </div>
+
+          <!-- Cards de Totais -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <p class="text-xs text-gray-500 font-medium">Total de Faturas Emitidas</p>
+              <h4 class="text-2xl font-bold text-gray-900 mt-1">${data.totalInvoices}</h4>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <p class="text-xs text-gray-500 font-medium">Receita Bruta Total</p>
+              <h4 class="text-2xl font-bold text-farmGreen-700 mt-1">${(data.totalRevenue || 0).toLocaleString()} Kz</h4>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <p class="text-xs text-gray-500 font-medium">Total de IVA Recolhido (14%)</p>
+              <h4 class="text-2xl font-bold text-blue-600 mt-1">${(data.totalTaxCollected || 0).toLocaleString()} Kz</h4>
+            </div>
+          </div>
+
+          <!-- Vendas por Operador -->
+          <div>
+            <h4 class="font-bold text-gray-900 text-sm mb-3">Desempenho por Operador de Caixa</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              ${operatorsHtml}
+            </div>
+          </div>
+
+          <!-- Detalhe Fatura a Fatura -->
+          <div class="pt-2">
+            <h4 class="font-bold text-gray-900 text-sm mb-3">Detalhe das Transações e Itens Faturados</h4>
+            ${detailsHtml}
+          </div>
+        `;
+
+        lucide.createIcons();
+      } catch (e) {
+        showModal('Erro', e.message, true);
+      }
+    }
+
+    function initCharts() {
+      const ctxSales = document.getElementById('salesChart').getContext('2d');
+      new Chart(ctxSales, {
+        type: 'line',
+        data: {
+          labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+          datasets: [{
+            label: 'Vendas (Kz)',
+            data: [45000, 72000, 58000, 95000, 120000, 145000, 98000],
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      const ctxStock = document.getElementById('stockChart').getContext('2d');
+      new Chart(ctxStock, {
+        type: 'doughnut',
+        data: {
+          labels: ['Analgésicos', 'Antibióticos', 'Vitaminas', 'Outros'],
+          datasets: [{
+            data: [45, 25, 20, 10],
+            backgroundColor: ['#16a34a', '#22c55e', '#86efac', '#dcfce7']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    let currentSaleDataForReturn = null;
+
+    // 1. Pesquisar a venda pelo número legível da fatura
+    async function searchSaleByInvoice() {
+      const invoiceNumber = document.getElementById('return-invoice-number').value.trim();
+      if (!invoiceNumber) {
+        showModal('Atenção', 'Por favor, insira o número da fatura (ex: FR FMN2026/0001).', true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/sales/invoice-number/${encodeURIComponent(invoiceNumber)}`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const sale = await res.json();
+
+        if (!res.ok) throw new Error(sale.error || 'Fatura não encontrada');
+
+        currentSaleDataForReturn = sale;
+        
+        // Exibir informações básicas da venda encontrada
+        document.getElementById('return-sale-info').textContent = `Fatura: ${sale.invoiceNumber} | Total: ${sale.total.toLocaleString()} Kz`;
+        document.getElementById('return-operator-info').textContent = `Operador: ${sale.user ? sale.user.name : 'N/D'}`;
+
+        const select = document.getElementById('return-item-select');
+        select.innerHTML = '';
+
+        if (!sale.items || sale.items.length === 0) {
+          showModal('Aviso', 'Esta fatura não contém itens registados.', true);
+          return;
+        }
+
+        // Preencher o select com os produtos reais da fatura
+        sale.items.forEach(item => {
+          const prodName = item.product ? item.product.name : 'Medicamento';
+          select.innerHTML += `
+            <option value="${item.id}" data-product-id="${item.productId}">
+              ${prodName} — Qtd Comprada: ${item.quantity} un — Preço Unit.: ${item.unitPrice.toLocaleString()} Kz
+            </option>
+          `;
+        });
+
+        document.getElementById('return-items-container').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (e) {
+        showModal('Erro na Pesquisa', e.message, true);
+        document.getElementById('return-items-container').classList.add('hidden');
+      }
+    }
+
+    // 2. Enviar a devolução utilizando os dados amigáveis da fatura pesquisada
+    async function submitReturnSmart() {
+      if (!currentSaleDataForReturn) return;
+
+      const saleItemSelect = document.getElementById('return-item-select');
+      const saleItemId = saleItemSelect.value;
+      const quantity = parseInt(document.getElementById('return-qty').value) || 1;
+      const reason = document.getElementById('return-reason').value.trim();
+
+      if (!reason) {
+        showModal('Campo Obrigatório', 'Por favor, indique o motivo da troca ou reembolso.', true);
+        return;
+      }
+
+      try {
+        // Obter o ID do operador logado através do token JWT
+        const payloadBase64 = authToken.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        const userId = decodedPayload.id;
+
+        const res = await fetch(`${API_BASE}/sales/returns`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            saleId: currentSaleDataForReturn.id, // ID interno gerido automaticamente pelo sistema
+            saleItemId,
+            userId,
+            quantity,
+            reason
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao processar devolução');
+
+        showModal('Sucesso', 'Troca/Devolução efetuada com sucesso! As unidades foram repostas automaticamente no lote correto (FEFO).');
+        
+        // Limpar o formulário
+        document.getElementById('return-invoice-number').value = '';
+        document.getElementById('return-reason').value = '';
+        document.getElementById('return-items-container').classList.add('hidden');
+        currentSaleDataForReturn = null;
+      } catch (e) {
+        showModal('Erro na Devolução', e.message, true);
+      }
+    }
+
+
+    // Atualizar a função switchTab para incluir o 'history'
+    const baseSwitchTab = window.switchTab || function(){};
+    window.switchTab = function(tabId) {
+      ['dashboard', 'inventory', 'alerts', 'pos', 'suppliers', 'returns', 'reports', 'history'].forEach(t => {
+        document.getElementById(`tab-${t}`)?.classList.add('hidden');
+        document.getElementById(`nav-${t}`)?.classList.remove('bg-farmGreen-50', 'text-farmGreen-700');
+        document.getElementById(`nav-${t}`)?.classList.add('text-gray-600', 'hover:bg-gray-50');
+      });
+      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
+      document.getElementById(`nav-${tabId}`)?.classList.add('bg-farmGreen-50', 'text-farmGreen-700');
+      document.getElementById(`nav-${tabId}`)?.classList.remove('text-gray-600', 'hover:bg-gray-50');
+
+      if (tabId === 'dashboard') loadDashboardData();
+      if (tabId === 'inventory') loadInventory();
+      if (tabId === 'alerts') loadExpirationAlerts();
+      if (tabId === 'pos') loadPosProducts();
+      if (tabId === 'history') loadSalesHistory();
+    };
+
+    // Carregar o histórico de vendas para a tabela
+    async function loadSalesHistory() {
+      try {
+        const res = await fetch(`${API_BASE}/sales`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const sales = await res.json();
+        const tbody = document.getElementById('history-table-body');
+        tbody.innerHTML = '';
+
+        if (!sales || sales.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Nenhuma venda registada até o momento.</td></tr>`;
+          return;
+        }
+
+        sales.forEach(s => {
+          const dateStr = new Date(s.createdAt).toLocaleString();
+          const operatorName = s.user ? s.user.name : 'Operador';
+          
+          tbody.innerHTML += `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="p-4 font-mono font-bold text-farmGreen-800">${s.invoiceNumber}</td>
+              <td class="p-4 text-gray-600 text-xs">${dateStr}</td>
+              <td class="p-4 text-gray-800">${operatorName}</td>
+              <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">${s.paymentMethod}</span></td>
+              <td class="p-4 font-bold text-gray-900">${s.total.toLocaleString()} Kz</td>
+              <td class="p-4 text-center space-x-2">
+                <button onclick="selectForReturn('${s.invoiceNumber}')" class="bg-farmGreen-50 hover:bg-farmGreen-100 text-farmGreen-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition" title="Ir para Devoluções com esta Fatura">
+                  Reembolsar / Trocar
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+        lucide.createIcons();
+      } catch (e) {
+        showModal('Erro', 'Não foi possível carregar o histórico de vendas.', true);
+      }
+    }
+
+    // Atalho prático: Clica em "Reembolsar / Trocar" no histórico e vai direto para a aba de trocas com a fatura preenchida!
+    function selectForReturn(invoiceNumber) {
+      switchTab('returns');
+      document.getElementById('return-invoice-number').value = invoiceNumber;
+      searchSaleByInvoice(); // Já pesquisa automaticamente
+    }
+  </script>
+</body>
+</html>

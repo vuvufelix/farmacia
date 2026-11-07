@@ -32,4 +32,23 @@ export class SaleController {
       return res.status(404).json({ error: error.message || 'Fatura não encontrada' })
     }
   }
+
+  static async getByInvoiceNumber(req: Request, res: Response) {
+  try {
+    const { invoiceNumber } = req.params;
+    const sale = await SaleService.getSaleByInvoiceNumber(invoiceNumber);
+    return res.json(sale);
+  } catch (error: any) {
+    return res.status(404).json({ error: error.message });
+  }
+}
+
+  static async listSales(req: Request, res: Response) {
+    try {
+      const sales = await SaleService.listAllSales()
+      return res.json(sales)
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || 'Erro ao carregar histórico de vendas' })
+    }
+  }
 }

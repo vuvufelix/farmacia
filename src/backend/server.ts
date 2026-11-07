@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { productRoutes } from './modules/products/product.routes.js'
 import { saleRoutes } from './modules/sales/sale.routes.js'
 import { supplierRoutes } from './modules/suppliers/supplier.routes.js'
@@ -7,6 +9,9 @@ import { LicenseService } from './modules/license/license.service.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { reportRoutes } from './modules/reports/report.routes.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 
@@ -41,6 +46,8 @@ app.use('/api/suppliers', supplierRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/reports', reportRoutes)
 app.use(errorMiddleware)
+
+app.use(express.static(path.resolve(__dirname, '../../public')))
 
 export function startServer(port: number): Promise<void> {
   return new Promise((resolve) => {

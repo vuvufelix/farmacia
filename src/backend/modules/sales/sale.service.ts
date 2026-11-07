@@ -95,6 +95,38 @@ export class SaleService {
     })
   }
 
+  static async getSaleInvoice(saleId: string) {
+    const sale = await prisma.sale.findUnique({
+      where: { id: saleId },
+      include: {
+        items: {
+          include: { product: true, batch: true }
+        },
+        user: { select: { name: true } }
+      }
+    })
+
+    if (!sale) throw new Error('Venda não encontrada')
+    return sale
+  }
+
+  // 1. Novo método para encontrar a fatura de forma legível pelo número (ex: FR FMN2026/0001)
+  static async getSaleByInvoiceNumber(invoiceNumber: string) {
+    const sale = await prisma.sale.findUnique({
+      where: { invoiceNumber: invoiceNumber.trim().toUpperCase() },
+      include: {
+        items: {
+          include: { product: true, batch: true }
+        },
+        user: { select: { name: true } }
+      }
+    })
+
+    if (!sale) throw new Error('Fatura não encontrada com este número')
+    return sale
+  }
+
+  // 2. Método de devolução otimizado (compatível com o ID do item selecionado na interface amigável)
   static async processReturn(data: {
     saleId: string
     saleItemId: string
@@ -116,7 +148,7 @@ export class SaleService {
         throw new Error('Quantidade para troca/devolução superior à faturada')
       }
 
-      // Reverter quantidade de volta ao lote
+      // Reverter quantidade de volta ao lote (FEFO / Stock)
       await tx.batch.update({
         where: { id: saleItem.batchId },
         data: { quantity: saleItem.batch.quantity + data.quantity }
@@ -142,18 +174,16 @@ export class SaleService {
     })
   }
 
-  static async getSaleInvoice(saleId: string) {
-    const sale = await prisma.sale.findUnique({
-      where: { id: saleId },
+  // Listar todas as vendas para o histórico
+  static async listAllSales() {
+    return prisma.sale.findMany({
+      orderBy: { createdAt: 'desc' },
       include: {
         items: {
           include: { product: true, batch: true }
         },
-        user: { select: { name: true } }
+        user: { select: { name: true, role: true } }
       }
     })
-
-    if (!sale) throw new Error('Venda não encontrada')
-    return sale
   }
 }

@@ -100,15 +100,29 @@ export class ProductService {
   }
 
   // No teu product.service.ts ou controller
-  static async deleteProduct(productId: string) {
-    // 1. Apagar primeiro os lotes associados a este produto
-    await prisma.batch.deleteMany({
-      where: { productId }
+  static async deleteProduct(id: string) {
+    // 1. Verificar se o produto já possui vendas registadas na base de dados
+    const salesCount = await prisma.saleItem.count({
+      where: { productId: id }
     });
 
-    // 2. Apagar itens de venda ou devoluções associadas se necessário, ou apagar o produto diretamente
-    return await prisma.product.delete({
-      where: { id: productId }
+    // 2. Se já tiver histórico de vendas, fazemos Soft Delete para preservar a integridade fiscal/auditoria
+    if (salesCount > 0) {
+      return await prisma.product.update({
+        where: { id },
+        data: { isActive: false }
+      });
+    }
+
+    // 3. Caso nunca tenha sido vendido, removemos os lotes e o produto em transação
+    return await prisma.$transaction(async (tx) => {
+      await tx.batch.deleteMany({
+        where: { productId: id }
+      });
+
+      return await tx.product.delete({
+        where: { id }
+      });
     });
   }
 }

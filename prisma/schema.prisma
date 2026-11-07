@@ -71,6 +71,7 @@ model Product {
   taxRate      Float      @default(0.0) // Taxa de IVA (ex: 0.14 para 14% ou 0.0 para Isento)
   taxExemption String?    // Motivo de isenção de IVA caso taxRate = 0
   minStock     Int        @default(10) // Estoque mínimo para disparo de alerta/pedido
+  isActive     Boolean  @default(true)   // <-- ADICIONA ESTA LINHA
   
   categoryId   String
   category     Category   @relation(fields: [categoryId], references: [id])

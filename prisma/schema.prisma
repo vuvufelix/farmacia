@@ -1,0 +1,204 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------
+// 1. UTILIZADORES E CONTROLO DE ACESSO (RBAC)
+// ------------------------------------------------------
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  username  String   @unique
+  password  String
+  role      String   @default("CAIXA") // "ADMIN" | "GERENTE" | "CAIXA" | "CONTABILISTA"
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sales     Sale[]
+  returns   Return[]
+
+  @@map("users")
+}
+
+// ------------------------------------------------------
+// 2. FORNECEDORES (Ex: Shalina Healthcare)
+// ------------------------------------------------------
+
+model Supplier {
+  id        String   @id @default(uuid())
+  name      String   // Ex: Shalina Healthcare, Genfar, etc.
+  phone     String   // Número de contacto / WhatsApp para automação de pedidos
+  email     String?
+  address   String?
+  nif       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products  Product[]
+
+  @@map("suppliers")
+}
+
+// ------------------------------------------------------
+// 3. CATEGORIAS E PRODUTOS
+// ------------------------------------------------------
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           String     @id @default(uuid())
+  name         String
+  code         String?    @unique // Código de barras / SKU
+  origin       String?    // Origem (Nacional / Importado)
+  costPrice    Float      // Preço de Custo
+  sellingPrice Float      // Preço de Venda
+  taxRate      Float      @default(0.0) // Taxa de IVA (ex: 0.14 para 14% ou 0.0 para Isento)
+  taxExemption String?    // Motivo de isenção de IVA caso taxRate = 0
+  minStock     Int        @default(10) // Estoque mínimo para disparo de alerta/pedido
+  
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id])
+  
+  supplierId   String?
+  supplier     Supplier?  @relation(fields: [supplierId], references: [id])
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  batches      Batch[]
+  saleItems    SaleItem[]
+
+  @@map("products")
+}
+
+// ------------------------------------------------------
+// 4. LOTES E VALIDADE (CADUCIDADE)
+// ------------------------------------------------------
+
+model Batch {
+  id             String     @id @default(uuid())
+  batchNumber    String     // Número do Lote
+  quantity       Int        // Quantidade disponível neste lote
+  manufacturingDate DateTime?
+  expirationDate DateTime   // Data de Caducidade (crucial para os alertas de 30/60/90 dias)
+  
+  productId      String
+  product        Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  saleItems      SaleItem[]
+
+  @@map("batches")
+}
+
+// ------------------------------------------------------
+// 5. VENDAS, ITENS DE VENDA E FACTURAÇÃO
+// ------------------------------------------------------
+
+model Sale {
+  id            String   @id @default(uuid())
+  invoiceNumber String   @unique // Formato ex: FR FMN2026/0001
+  subtotal      Float
+  taxTotal      Float    // Total de IVA calculated
+  total         Float    // Total Líquido
+  paymentMethod String   @default("MONEY") // "MONEY" | "MULTICAIXA" | "TRANSFER" | "COMBINED"
+  
+  // Campos para simulação de estrutura fiscal
+  hash          String   // Hash de integridade da venda
+  qrCodeData    String?  // Dados para geração de QR Code local
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         SaleItem[]
+  returns       Return[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id         String   @id @default(uuid())
+  quantity   Int
+  unitPrice  Float
+  taxRate    Float
+  taxAmount  Float
+  subtotal   Float
+  total      Float
+
+  saleId     String
+  sale       Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+
+  batchId    String
+  batch      Batch    @relation(fields: [batchId], references: [id])
+
+  returns    Return[]
+
+  @@map("sale_items")
+}
+
+// ------------------------------------------------------
+// 6. DEVOLUÇÕES E TROCAS DE PRODUTOS
+// ------------------------------------------------------
+
+model Return {
+  id           String   @id @default(uuid())
+  reason       String   // Motivo da troca/devolução
+  quantity     Int      // Quantidade devolvida
+  refundAmount Float    // Valor devolvido ou creditado
+
+  saleId       String
+  sale         Sale     @relation(fields: [saleId], references: [id])
+
+  saleItemId   String
+  saleItem     SaleItem @relation(fields: [saleItemId], references: [id])
+
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+
+  createdAt    DateTime @default(now())
+
+  @@map("returns")
+}
+
+// ------------------------------------------------------
+// 7. SUBSCRIÇÃO E LICENÇA OFFLINE (10.000 Kz/mês)
+// ------------------------------------------------------
+
+model License {
+  id           String   @id @default(uuid())
+  pharmacyName String
+  licenseKey   String   // Token criptografado
+  startDate    DateTime
+  expiresAt    DateTime // Data Limite da Subscrição
+  isActive     Boolean  @default(true)
+  lastVerified DateTime @default(now())
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("licenses")
+}

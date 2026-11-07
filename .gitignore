@@ -1,0 +1,41 @@
+# Dependências de Node.js
+node_modules/
+.pnpm-store/
+
+# Builds e Compilação
+dist/
+build/
+release/
+out/
+*.tsbuildinfo
+
+# Ambiente e Variáveis Secretas
+.env
+.env.local
+.env.*.local
+
+# Banco de Dados Local (SQLite) e Migrações de Dev
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.sqlite
+
+# Logs de Execução e Erros
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Ficheiros do Sistema Operativo e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Pacotes e Artefactos de Empacotamento Electron
+*.exe
+*.AppImage
+*.deb
+*.dmg

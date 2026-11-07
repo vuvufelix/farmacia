@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/electron-builder.json",
+  "appId": "com.nenovatech.pharmacy",
+  "productName": "Nenova Tech - Gestão de Farmácia",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "prisma/dev.db",
+    "node_modules/**/*",
+    "package.json"
+  ],
+  "win": {
+    "target": "nsis",
+    "icon": "assets/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Nenova Tech Farmácia"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "category": "Office"
+  }
+}

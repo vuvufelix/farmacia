@@ -12,6 +12,7 @@ productRoutes.post('/', ensureRole(['ADMIN']), ProductController.create)
 productRoutes.get('/', ProductController.list)
 productRoutes.post('/batches', ensureRole(['ADMIN']), ProductController.addBatch)
 productRoutes.get('/alerts/expiration', ProductController.getAlerts)
+productRoutes.put('/:id', ensureRole(['ADMIN']), ProductController.update)
 productRoutes.delete('/:id', ensureRole(['ADMIN']), ProductController.deleteProduct)
 
 export { productRoutes }

@@ -690,6 +690,7 @@
     let productToDeleteId = null;
     let onlyLowStockActive = false;
     let allProductsCache = [];
+    let editingProductId = null;
 
     // Função auxiliar para determinar o Role do utilizador logado
     function checkIsAdmin() {
@@ -904,11 +905,11 @@
       
       tbody.innerHTML = '';
       if (!products || products.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Nenhum produto encontrado com estes critérios.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Nenhum produto encontrado.</td></tr>`;
         return;
       }
 
-      // Verificação de Admin Segura
+      // Verificação segura se o utilizador logado é ADMINISTRADOR
       const isAdmin = checkIsAdmin();
 
       products.forEach(p => {
@@ -916,11 +917,11 @@
         const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
         const isLowStock = totalStock <= (p.minStock || 0);
         
-        const batchNumber = activeBatch ? activeBatch.batchNumber : 'Sem Lote';
+        const batchNumber = activeBatch ? activeBatch.batchNumber : 'Sem Stock';
         const expiryDate = activeBatch ? new Date(activeBatch.expirationDate).toLocaleDateString('pt-AO') : 'N/D';
 
         tbody.innerHTML += `
-          <tr class="hover:bg-gray-50/50 transition text-xs ${isLowStock ? 'bg-amber-50/40' : ''}">
+          <tr class="hover:bg-gray-50/50 transition text-xs ${totalStock === 0 ? 'bg-red-50/30' : (isLowStock ? 'bg-amber-50/40' : '')}">
             <td class="p-4">
               <p class="font-bold text-gray-900 text-sm">${p.name}</p>
               <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
@@ -930,12 +931,18 @@
             <td class="p-4 font-mono text-gray-700">${batchNumber}</td>
             <td class="p-4 text-gray-600">${expiryDate}</td>
             <td class="p-4">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold ${isLowStock ? 'bg-amber-100 text-amber-800' : 'text-gray-900'}">
-                ${totalStock} un ${isLowStock ? '(Baixo)' : ''}
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold ${totalStock === 0 ? 'bg-red-100 text-red-800' : (isLowStock ? 'bg-amber-100 text-amber-800' : 'text-gray-900')}">
+                ${totalStock} un ${totalStock === 0 ? '(Esgotado)' : (isLowStock ? '(Baixo)' : '')}
               </span>
             </td>
-            <td class="p-4 text-right">
+            <td class="p-4 text-right space-x-1">
               ${isAdmin ? `
+                <!-- BOTÃO DE EDITAR (Restrito apenas a ADMIN) -->
+                <button onclick="openEditProductModal('${p.id}')" class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Produto">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+
+                <!-- BOTÃO DE ELIMINAR (Restrito apenas a ADMIN) -->
                 <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition" title="Eliminar Produto">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
@@ -1833,6 +1840,56 @@
         productToDeleteId = null;
       }
     }
+
+    // Torna a função global para o HTML conseguir aceder ao clicar no botão
+    window.openEditProductModal = async function(productId) {
+      editingProductId = productId;
+      
+      // 1. Carregar as categorias e fornecedores primeiro para preencher os selects
+      if (typeof loadCategories === 'function') await loadCategories();
+      if (typeof loadSuppliers === 'function') await loadSuppliers();
+
+      // 2. Procura o produto na cache global
+      const product = allProductsCache.find(p => p.id === productId);
+
+      if (!product) {
+        showToast('Produto não encontrado na lista de inventário.', 'error');
+        return;
+      }
+
+      // 3. Preenche os campos do formulário com os dados atuais
+      const nameEl = document.getElementById('prod-name');
+      const codeEl = document.getElementById('prod-code');
+      const categoryEl = document.getElementById('prod-category');
+      const supplierEl = document.getElementById('prod-supplier');
+      const costEl = document.getElementById('prod-cost');
+      const priceEl = document.getElementById('prod-price');
+      const taxEl = document.getElementById('prod-tax');
+      const originEl = document.getElementById('prod-origin');
+      const minStockEl = document.getElementById('prod-minstock');
+
+      if (nameEl) nameEl.value = product.name || '';
+      if (codeEl) codeEl.value = product.code || '';
+      if (categoryEl) categoryEl.value = product.categoryId || '';
+      if (supplierEl) supplierEl.value = product.supplierId || '';
+      if (costEl) costEl.value = product.costPrice || 0;
+      if (priceEl) priceEl.value = product.sellingPrice || 0;
+      if (taxEl) taxEl.value = product.taxRate || 0;
+      if (originEl) originEl.value = product.origin || 'Nacional';
+      if (minStockEl) minStockEl.value = product.minStock || 5;
+
+      // Oculta a secção de lote inicial na edição
+      const batchContainer = document.getElementById('initial-batch-container');
+      if (batchContainer) batchContainer.classList.add('hidden');
+
+      // Altera o título do modal
+      const modalTitle = document.getElementById('product-modal-title');
+      if (modalTitle) modalTitle.textContent = 'Editar Produto';
+
+      // Abre o modal
+      const modal = document.getElementById('product-modal');
+      if (modal) modal.classList.remove('hidden');
+    };
 
     // ==========================================
   // 4. SISTEMA AUXILIAR DE TOAST NOTIFICATIONS

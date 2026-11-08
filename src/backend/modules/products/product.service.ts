@@ -125,4 +125,13 @@ export class ProductService {
       });
     });
   }
+
+  static async updateProduct(id: string, data: any) {
+    const product = await prisma.product.update({
+      where: { id },
+      data
+    })
+
+    return product
+  }
 }

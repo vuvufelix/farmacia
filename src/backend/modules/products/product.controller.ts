@@ -49,4 +49,19 @@ export class ProductController {
       return res.status(400).json({ error: error });
     }
   }
+
+  static async update(req: Request, res: Response) {
+    try {
+      // Opcional: Validar se o utilizador autenticado no req.user é ADMIN
+      if (req.user && req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem editar produtos.' });
+      }
+
+      const { id } = req.params;
+      const updatedProduct = await ProductService.updateProduct(id, req.body);
+      return res.json(updatedProduct);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
 }

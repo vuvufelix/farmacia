@@ -1683,11 +1683,8 @@
   // ==========================================
   async function submitNewProduct(event) {
     event.preventDefault();
-    console.log('🚀 A iniciar o envio do formulário de produto...');
-    
-    try {
+      
       const rawCode = document.getElementById('prod-code').value.trim();
-
       const productPayload = {
         name: document.getElementById('prod-name').value,
         code: rawCode !== "" ? rawCode : undefined,
@@ -1700,55 +1697,71 @@
         minStock: parseInt(document.getElementById('prod-minstock').value)
       };
 
-      const resProduct = await fetch(`${API_BASE}/products`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify(productPayload)
-      });
+      try {
+        if (editingProductId) {
+          // Pedido PUT para Atualizar
+          const res = await fetch(`${API_BASE}/products/${editingProductId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(productPayload)
+          });
 
-      const productData = await resProduct.json();
-      if (!resProduct.ok) throw new Error(productData.error || 'Erro ao criar produto no backend');
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erro ao atualizar produto');
 
-      const batchNumber = document.getElementById('prod-batch').value.trim();
-      const quantity = parseInt(document.getElementById('prod-qty').value);
-      const expiryDateInput = document.getElementById('prod-expiry').value;
+          showToast('Produto atualizado com sucesso!', 'success');
+        } else {
+          // Pedido POST para Novo Produto
+          const resProduct = await fetch(`${API_BASE}/products`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(productPayload)
+          });
 
-      if (batchNumber && quantity && expiryDateInput) {
-        const isoExpirationDate = new Date(expiryDateInput + 'T00:00:00.000Z').toISOString();
+          const productData = await resProduct.json();
+          if (!resProduct.ok) throw new Error(productData.error || 'Erro ao criar produto');
 
-        const batchPayload = {
-          batchNumber,
-          quantity,
-          expirationDate: isoExpirationDate,
-          productId: productData.id
-        };
+          // Lote inicial opcional
+          const batchNumber = document.getElementById('prod-batch')?.value.trim();
+          const quantity = parseInt(document.getElementById('prod-qty')?.value);
+          const expiryDateInput = document.getElementById('prod-expiry')?.value;
 
-        const resBatch = await fetch(`${API_BASE}/products/batches`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify(batchPayload)
-        });
+          if (batchNumber && quantity && expiryDateInput) {
+            const isoExpirationDate = new Date(expiryDateInput + 'T00:00:00.000Z').toISOString();
+            await fetch(`${API_BASE}/products/batches`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+              },
+              body: JSON.stringify({
+                batchNumber,
+                quantity,
+                expirationDate: isoExpirationDate,
+                productId: productData.id
+              })
+            });
+          }
 
-        const batchData = await resBatch.json();
-        if (!resBatch.ok) throw new Error(batchData.error || 'Produto criado, mas houve erro ao registar o lote');
+          showToast('Produto cadastrado com sucesso!', 'success');
+        }
+
+        closeProductModal();
+        loadInventory();
+        if (typeof loadDashboardData === 'function') loadDashboardData();
+
+      } catch (e) {
+        showToast('Erro: ' + e.message, 'error');
+        console.error('Erro na submissão do produto:', e);
+      } finally {
+        editingProductId = null;
       }
-
-      showToast('Produto e lote cadastrados com sucesso!', 'success');
-      closeProductModal();
-      document.getElementById('product-form').reset();
-      loadInventory();
-      if (typeof loadDashboardData === 'function') loadDashboardData();
-
-    } catch (e) {
-      console.error('❌ Erro capturado no submit:', e);
-      showToast('Erro ao guardar: ' + e.message, 'error');
-    }
   }
 
     // 1. Função centralizada para aplicar restrições visuais baseadas no papel do utilizador
@@ -1845,50 +1858,40 @@
     window.openEditProductModal = async function(productId) {
       editingProductId = productId;
       
-      // 1. Carregar as categorias e fornecedores primeiro para preencher os selects
-      if (typeof loadCategories === 'function') await loadCategories();
-      if (typeof loadSuppliers === 'function') await loadSuppliers();
+      // 1. Abre o modal e limpa/prepara o formulário
+      const modal = document.getElementById('product-modal');
+      if (modal) modal.classList.remove('hidden');
 
-      // 2. Procura o produto na cache global
+      // 2. Carrega obrigatoriamente as categorias e fornecedores para popular os <select>
+      if (typeof loadCategoriesAndSuppliers === 'function') {
+        await loadCategoriesAndSuppliers();
+      }
+
+      // 3. Procura o produto na cache global do inventário
       const product = allProductsCache.find(p => p.id === productId);
-
       if (!product) {
-        showToast('Produto não encontrado na lista de inventário.', 'error');
+        showToast('Produto não encontrado na cache do inventário.', 'error');
         return;
       }
 
-      // 3. Preenche os campos do formulário com os dados atuais
-      const nameEl = document.getElementById('prod-name');
-      const codeEl = document.getElementById('prod-code');
-      const categoryEl = document.getElementById('prod-category');
-      const supplierEl = document.getElementById('prod-supplier');
-      const costEl = document.getElementById('prod-cost');
-      const priceEl = document.getElementById('prod-price');
-      const taxEl = document.getElementById('prod-tax');
-      const originEl = document.getElementById('prod-origin');
-      const minStockEl = document.getElementById('prod-minstock');
+      // 4. Preenche os campos do formulário com os dados atuais do produto
+      document.getElementById('prod-name').value = product.name || '';
+      document.getElementById('prod-code').value = product.code || '';
+      document.getElementById('prod-category').value = product.categoryId || '';
+      document.getElementById('prod-supplier').value = product.supplierId || '';
+      document.getElementById('prod-cost').value = product.costPrice || 0;
+      document.getElementById('prod-price').value = product.sellingPrice || 0;
+      document.getElementById('prod-tax').value = product.taxRate || 0;
+      document.getElementById('prod-origin').value = product.origin || 'Nacional';
+      document.getElementById('prod-minstock').value = product.minStock || 5;
 
-      if (nameEl) nameEl.value = product.name || '';
-      if (codeEl) codeEl.value = product.code || '';
-      if (categoryEl) categoryEl.value = product.categoryId || '';
-      if (supplierEl) supplierEl.value = product.supplierId || '';
-      if (costEl) costEl.value = product.costPrice || 0;
-      if (priceEl) priceEl.value = product.sellingPrice || 0;
-      if (taxEl) taxEl.value = product.taxRate || 0;
-      if (originEl) originEl.value = product.origin || 'Nacional';
-      if (minStockEl) minStockEl.value = product.minStock || 5;
-
-      // Oculta a secção de lote inicial na edição
+      // Oculta a secção de lote inicial durante a edição
       const batchContainer = document.getElementById('initial-batch-container');
       if (batchContainer) batchContainer.classList.add('hidden');
 
       // Altera o título do modal
       const modalTitle = document.getElementById('product-modal-title');
       if (modalTitle) modalTitle.textContent = 'Editar Produto';
-
-      // Abre o modal
-      const modal = document.getElementById('product-modal');
-      if (modal) modal.classList.remove('hidden');
     };
 
     // ==========================================

@@ -1,4 +1,5 @@
 import { prisma } from '../../database/prisma.client.js'
+import { AppError } from '../../utils/errors.js'
 
 export class ProductService {
   static async createProduct(data: any) {
@@ -127,11 +128,24 @@ export class ProductService {
   }
 
   static async updateProduct(id: string, data: any) {
-    const product = await prisma.product.update({
-      where: { id },
-      data
-    })
+    const productExists = await prisma.product.findUnique({ where: { id } });
+    if (!productExists) {
+      throw new AppError('Produto não encontrado', 404);
+    }
 
-    return product
+    return await prisma.product.update({
+      where: { id },
+      data: {
+        name: data.name,
+        code: data.code,
+        categoryId: data.categoryId,
+        supplierId: data.supplierId,
+        costPrice: data.costPrice,
+        sellingPrice: data.sellingPrice,
+        taxRate: data.taxRate,
+        origin: data.origin,
+        minStock: data.minStock
+      }
+    });
   }
 }

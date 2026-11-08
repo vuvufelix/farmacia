@@ -691,6 +691,28 @@
     let onlyLowStockActive = false;
     let allProductsCache = [];
 
+    // Função auxiliar para determinar o Role do utilizador logado
+    function checkIsAdmin() {
+      // 1. Tenta pelo localStorage
+      const storedRole = localStorage.getItem('userRole') || localStorage.getItem('currentUserRole');
+      if (storedRole && storedRole.trim().toUpperCase() === 'ADMIN') return true;
+
+      // 2. Tenta descodificar o Token JWT
+      if (typeof authToken !== 'undefined' && authToken) {
+        try {
+          const payloadBase64 = authToken.split('.')[1];
+          const decoded = JSON.parse(atob(payloadBase64));
+          if (decoded.role && decoded.role.toUpperCase() === 'ADMIN') return true;
+        } catch (e) {}
+      }
+
+      // 3. Tenta pela variável global (se existir)
+      if (typeof currentUserRole !== 'undefined' && currentUserRole === 'ADMIN') return true;
+
+      // Por omissão para testes de desenvolvimento, se não estiver restrito
+      return false;
+    }
+
     // Sistema de Modal Profissional
     function showModal(title, message, isError = false) {
       document.getElementById('modal-title').textContent = title;
@@ -828,69 +850,68 @@
   // 1. CARREGAMENTO E FILTRAGEM DO INVENTÁRIO
   // ==========================================
   async function loadInventory() {
-    try {
-      const res = await fetch(`${API_BASE}/products`, {
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      
-      if (!res.ok) throw new Error('Falha ao buscar produtos da API');
-      
-      allProductsCache = await res.json();
-      applyCurrentInventoryFilter();
+      try {
+        const res = await fetch(`${API_BASE}/products`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!res.ok) throw new Error('Falha ao buscar produtos da API');
+        
+        allProductsCache = await res.json();
+        applyCurrentInventoryFilter();
 
-    } catch (e) {
-      console.error('Erro ao carregar inventário:', e);
-      const tbody = document.getElementById('inventory-table-body');
-      if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erro ao carregar dados do inventário.</td></tr>`;
+      } catch (e) {
+        console.error('Erro ao carregar inventário:', e);
+        const tbody = document.getElementById('inventory-table-body');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Erro ao carregar dados do inventário.</td></tr>`;
+        }
       }
     }
-  }
 
     function toggleLowStockFilter() {
-        onlyLowStockActive = !onlyLowStockActive;
-        const btn = document.getElementById('btn-filter-lowstock');
+      onlyLowStockActive = !onlyLowStockActive;
+      const btn = document.getElementById('btn-filter-lowstock');
 
-        if (btn) {
-            if (onlyLowStockActive) {
-            btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-200');
-            btn.classList.add('bg-amber-600', 'text-white', 'border-amber-600', 'shadow-sm');
-            } else {
-            btn.classList.remove('bg-amber-600', 'text-white', 'border-amber-600', 'shadow-sm');
-            btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
-            }
+      if (btn) {
+        if (onlyLowStockActive) {
+          btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-200');
+          btn.classList.add('bg-amber-600', 'text-white', 'border-amber-600', 'shadow-sm');
+        } else {
+          btn.classList.remove('bg-amber-600', 'text-white', 'border-amber-600', 'shadow-sm');
+          btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
         }
-        applyCurrentInventoryFilter();
+      }
+      applyCurrentInventoryFilter();
     }
 
     function applyCurrentInventoryFilter() {
-        let productsToRender = allProductsCache;
+      let productsToRender = allProductsCache;
 
-        if (onlyLowStockActive) {
+      if (onlyLowStockActive) {
         productsToRender = allProductsCache.filter(p => {
-            const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
-            return totalStock <= (p.minStock || 0);
+          const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
+          return totalStock <= (p.minStock || 0);
         });
-        }
+      }
 
-        renderInventoryTable(productsToRender);
+      renderInventoryTable(productsToRender);
     }
 
     function renderInventoryTable(products) {
-        const tbody = document.getElementById('inventory-table-body');
-        if (!tbody) return;
-        
-        tbody.innerHTML = '';
-        if (!products || products.length === 0) {
+      const tbody = document.getElementById('inventory-table-body');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '';
+      if (!products || products.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Nenhum produto encontrado com estes critérios.</td></tr>`;
         return;
-        }
+      }
 
-        // Verificação robusta (aceita maiúsculas/minúsculas e previne nulos)
-        const storedRole = localStorage.getItem('userRole') || '';
-        const isAdmin = storedRole.trim().toUpperCase() === 'ADMIN';
+      // Verificação de Admin Segura
+      const isAdmin = checkIsAdmin();
 
-        products.forEach(p => {
+      products.forEach(p => {
         const activeBatch = p.batches && p.batches.length > 0 ? p.batches[0] : null;
         const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
         const isLowStock = totalStock <= (p.minStock || 0);
@@ -899,32 +920,32 @@
         const expiryDate = activeBatch ? new Date(activeBatch.expirationDate).toLocaleDateString('pt-AO') : 'N/D';
 
         tbody.innerHTML += `
-            <tr class="hover:bg-gray-50/50 transition text-xs ${isLowStock ? 'bg-amber-50/40' : ''}">
+          <tr class="hover:bg-gray-50/50 transition text-xs ${isLowStock ? 'bg-amber-50/40' : ''}">
             <td class="p-4">
-                <p class="font-bold text-gray-900 text-sm">${p.name}</p>
-                <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
+              <p class="font-bold text-gray-900 text-sm">${p.name}</p>
+              <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
             </td>
             <td class="p-4 text-gray-600">${p.category ? p.category.name : 'N/D'}</td>
             <td class="p-4 font-bold text-farmGreen-700">${(p.sellingPrice || 0).toLocaleString()} Kz</td>
             <td class="p-4 font-mono text-gray-700">${batchNumber}</td>
             <td class="p-4 text-gray-600">${expiryDate}</td>
             <td class="p-4">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold ${isLowStock ? 'bg-amber-100 text-amber-800' : 'text-gray-900'}">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold ${isLowStock ? 'bg-amber-100 text-amber-800' : 'text-gray-900'}">
                 ${totalStock} un ${isLowStock ? '(Baixo)' : ''}
-                </span>
+              </span>
             </td>
             <td class="p-4 text-right">
-                ${isAdmin ? `
+              ${isAdmin ? `
                 <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition" title="Eliminar Produto">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
-                ` : `<span class="text-gray-300">-</span>`}
+              ` : `<span class="text-gray-300">-</span>`}
             </td>
-            </tr>
+          </tr>
         `;
-        });
-        
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+      });
+      
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     async function loadExpirationAlerts() {
@@ -1747,85 +1768,85 @@
   // 3. GESTÃO DE REMOÇÃO DE PRODUTO COM MODAL
   // ==========================================
   function deleteProduct(productId) {
-    productToDeleteId = productId;
-    
-    let modalEl = document.getElementById('custom-confirm-modal');
-    if (!modalEl) {
-      modalEl = document.createElement('div');
-      modalEl.id = 'custom-confirm-modal';
-      modalEl.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
-      modalEl.innerHTML = `
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 transform transition-all animate-in fade-in zoom-in-95">
-          <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
-            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      productToDeleteId = productId;
+      
+      let modalEl = document.getElementById('custom-confirm-modal');
+      if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'custom-confirm-modal';
+        modalEl.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+        modalEl.innerHTML = `
+          <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 transform transition-all animate-in fade-in zoom-in-95">
+            <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Eliminar Produto</h3>
+            <p class="text-sm text-gray-500 text-center mb-6">Tem a certeza de que deseja eliminar este produto e todos os seus lotes associados? Esta ação é irreversível.</p>
+            <div class="flex space-x-3">
+              <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold transition">
+                Cancelar
+              </button>
+              <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-sm">
+                Sim, Eliminar
+              </button>
+            </div>
           </div>
-          <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Eliminar Produto</h3>
-          <p class="text-sm text-gray-500 text-center mb-6">Tem a certeza de que deseja eliminar este produto e todos os seus lotes associados? Esta ação é irreversível.</p>
-          <div class="flex space-x-3">
-            <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold transition">
-              Cancelar
-            </button>
-            <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-sm">
-              Sim, Eliminar
-            </button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modalEl);
-    } else {
-      modalEl.classList.remove('hidden');
+        `;
+        document.body.appendChild(modalEl);
+      } else {
+        modalEl.classList.remove('hidden');
+      }
+      
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
-    
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  }
 
     function closeConfirmModal() {
-        const modalEl = document.getElementById('custom-confirm-modal');
-        if (modalEl) modalEl.classList.add('hidden');
-        productToDeleteId = null;
+      const modalEl = document.getElementById('custom-confirm-modal');
+      if (modalEl) modalEl.classList.add('hidden');
+      productToDeleteId = null;
     }
 
   async function confirmDeleteProduct() {
-    if (!productToDeleteId) return;
-    const productId = productToDeleteId;
-    closeConfirmModal();
+      if (!productToDeleteId) return;
+      const productId = productToDeleteId;
+      closeConfirmModal();
 
-    try {
-      const res = await fetch(`${API_BASE}/products/${productId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
+      try {
+        const res = await fetch(`${API_BASE}/products/${productId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
 
-      const data = await res.json();
-      if (!res.ok) {
-        const errorMessage = data.error || data.message || (typeof data === 'string' ? data : 'Erro ao eliminar produto');
-        throw new Error(errorMessage);
+        const data = await res.json();
+        if (!res.ok) {
+          const errorMessage = data.error || data.message || (typeof data === 'string' ? data : 'Erro ao eliminar produto');
+          throw new Error(errorMessage);
+        }
+
+        showToast('Produto removido com sucesso!', 'success');
+        loadInventory();
+        if (typeof loadDashboardData === 'function') loadDashboardData();
+      } catch (e) {
+        showToast('Não foi possível apagar: ' + e.message, 'error');
+        console.error('Erro na exclusão:', e);
+      } finally {
+        productToDeleteId = null;
       }
-
-      showToast('Produto removido com sucesso!', 'success');
-      loadInventory();
-      if (typeof loadDashboardData === 'function') loadDashboardData();
-    } catch (e) {
-      showToast('Não foi possível apagar: ' + e.message, 'error');
-      console.error('Erro na exclusão:', e);
-    } finally {
-      productToDeleteId = null;
     }
-  }
 
     // ==========================================
   // 4. SISTEMA AUXILIAR DE TOAST NOTIFICATIONS
   // ==========================================
   function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white transition-all transform translate-y-2 animate-in fade-in slide-in-from-bottom-5 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
-    }, 3500);
-  }
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white transition-all transform translate-y-2 animate-in fade-in slide-in-from-bottom-5 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
   </script>
 </body>
 </html>

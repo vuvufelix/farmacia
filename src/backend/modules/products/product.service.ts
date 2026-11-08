@@ -1,15 +1,35 @@
 import { prisma } from '../../database/prisma.client.js'
-import { AppError } from '../../utils/errors.js'
 
 export class ProductService {
   static async createProduct(data: any) {
-    return prisma.product.create({
-      data,
-      include: {
-        category: true,
-        supplier: true
+    const { initialStock, batchNumber, expirationDate, ...productData } = data;
+
+    return prisma.$transaction(async (tx) => {
+      const product = await tx.product.create({
+        data: productData,
+        include: {
+          category: true,
+          supplier: true
+        }
+      });
+
+      // Se foram passados dados de lote inicial na criação
+      if (initialStock && initialStock > 0) {
+        await tx.batch.create({
+          data: {
+            batchNumber: batchNumber || `LOTE-${Date.now().toString().slice(-6)}`,
+            quantity: Number(initialStock),
+            expirationDate: expirationDate ? new Date(expirationDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            productId: product.id
+          }
+        });
       }
-    })
+
+      return tx.product.findUnique({
+        where: { id: product.id },
+        include: { category: true, supplier: true, batches: true }
+      });
+    });
   }
 
   static async listProducts() {
@@ -128,24 +148,57 @@ export class ProductService {
   }
 
   static async updateProduct(id: string, data: any) {
-    const productExists = await prisma.product.findUnique({ where: { id } });
-    if (!productExists) {
-      throw new AppError('Produto não encontrado', 404);
-    }
+    const { initialStock, quantity, batchNumber, expirationDate, ...productData } = data;
+    const stockValue = initialStock ?? quantity;
 
-    return await prisma.product.update({
-      where: { id },
-      data: {
-        name: data.name,
-        code: data.code,
-        categoryId: data.categoryId,
-        supplierId: data.supplierId,
-        costPrice: data.costPrice,
-        sellingPrice: data.sellingPrice,
-        taxRate: data.taxRate,
-        origin: data.origin,
-        minStock: data.minStock
+    return await prisma.$transaction(async (tx) => {
+      // 1. Atualiza os dados principais do produto
+      const updatedProduct = await tx.product.update({
+        where: { id },
+        data: productData,
+      });
+
+      // 2. Se foi passada uma quantidade no update, ajusta ou cria o lote
+      if (stockValue !== undefined && stockValue !== null && !isNaN(stockValue)) {
+        const numericStock = Number(stockValue);
+        
+        const existingBatch = await tx.batch.findFirst({
+          where: { productId: id },
+          orderBy: { expirationDate: 'asc' },
+        });
+
+        if (existingBatch) {
+          await tx.batch.update({
+            where: { id: existingBatch.id },
+            data: { 
+              quantity: numericStock,
+              ...(batchNumber ? { batchNumber } : {}),
+              ...(expirationDate ? { expirationDate: new Date(expirationDate) } : {})
+            },
+          });
+        } else if (numericStock > 0) {
+          await tx.batch.create({
+            data: {
+              batchNumber: batchNumber || `LOTE-AUTO-${Date.now().toString().slice(-6)}`,
+              quantity: numericStock,
+              expirationDate: expirationDate ? new Date(expirationDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              productId: id,
+            },
+          });
+        }
       }
+
+      return await tx.product.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          supplier: true,
+          batches: {
+            where: { quantity: { gt: 0 } },
+            orderBy: { expirationDate: 'asc' }
+          }
+        }
+      });
     });
   }
 }

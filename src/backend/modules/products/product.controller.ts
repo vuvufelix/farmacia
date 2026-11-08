@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { ProductService } from './product.service.js'
-import { createProductSchema, createBatchSchema } from './product.schema.js'
+import { createProductSchema, createBatchSchema, updateProductSchema } from './product.schema.js'
 
 export class ProductController {
   static async create(req: Request, res: Response) {
@@ -52,16 +52,19 @@ export class ProductController {
 
   static async update(req: Request, res: Response) {
     try {
-      // Opcional: Validar se o utilizador autenticado no req.user é ADMIN
       if (req.user && req.user.role !== 'ADMIN') {
         return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem editar produtos.' });
       }
 
       const { id } = req.params;
-      const updatedProduct = await ProductService.updateProduct(id, req.body);
+      
+      // Valida os dados que vêm do frontend usando o schema parcial
+      const validatedData = updateProductSchema.parse(req.body);
+
+      const updatedProduct = await ProductService.updateProduct(id, validatedData);
       return res.json(updatedProduct);
     } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message || 'Erro ao atualizar produto' });
     }
   }
 }

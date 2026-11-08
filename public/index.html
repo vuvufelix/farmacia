@@ -431,7 +431,7 @@
                 </div>
 
                 <!-- Secção de Lote Inicial (Opcional ou Obrigatório) -->
-                <div class="border-t border-gray-100 pt-3 mt-3">
+                <div id="initial-batch-container" class="border-t border-gray-100 pt-3 mt-3">
                 <p class="font-bold text-gray-800 mb-2 flex items-center space-x-1">
                     <i data-lucide="calendar" class="w-4 h-4 text-farmGreen-600"></i>
                     <span>Lote Inicial do Medicamento</span>
@@ -488,18 +488,41 @@
                 </div>
               </div>
 
+              <!-- Secção de Pesquisa e Seleção de Medicamento com Sugestões -->
               <div class="border-t border-gray-100 pt-4 space-y-3">
-                <h4 class="font-semibold text-gray-800 text-sm">Selecionar Medicamento (FEFO Automático)</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div class="md:col-span-2">
-                    <select id="pos-product-select" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
-                      <option value="">A carregar medicamentos...</option>
-                    </select>
+                <h4 class="font-semibold text-gray-800 text-sm">Pesquisar e Selecionar Medicamento (FEFO Automático)</h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 relative">
+                  <!-- Campo de Pesquisa com Autocomplete -->
+                  <div class="md:col-span-2 relative">
+                    <div class="relative">
+                      <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                      </span>
+                      <input type="text" id="pos-product-search" placeholder="Escreva o nome do medicamento para pesquisar..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition" oninput="handlePosSearchInput(this.value)">
+                    </div>
+                    
+                    <!-- Lista de Sugestões (Dropdown dinâmico) -->
+                    <div id="pos-suggestions-dropdown" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-30 hidden">
+                      <!-- Sugestões injetadas via JS -->
+                    </div>
                   </div>
+
                   <div>
                     <input type="number" id="pos-quantity" min="1" value="1" placeholder="Qtd" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
                   </div>
                 </div>
+
+                <!-- Campos ocultos para guardar o ID e dados do produto selecionado -->
+                <input type="hidden" id="pos-selected-product-id" value="">
+                <input type="hidden" id="pos-selected-batch-id" value="">
+                <input type="hidden" id="pos-selected-price" value="0">
+
+                <div id="pos-selected-product-info" class="text-xs text-farmGreen-700 font-medium hidden bg-farmGreen-50 p-2.5 rounded-lg border border-farmGreen-100 flex justify-between items-center">
+                  <span id="pos-selected-product-name">Nenhum produto selecionado</span>
+                  <button type="button" onclick="clearSelectedPosProduct()" class="text-gray-400 hover:text-red-600 font-bold">✕ Limpar</button>
+                </div>
+
                 <button onclick="addItemToCart()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow">
                   <i data-lucide="plus" class="w-4 h-4"></i>
                   <span>Adicionar ao Carrinho</span>
@@ -691,6 +714,8 @@
     let onlyLowStockActive = false;
     let allProductsCache = [];
     let editingProductId = null;
+    let salesChartInstance = null;
+    let stockChartInstance = null;
 
     // Função auxiliar para determinar o Role do utilizador logado
     function checkIsAdmin() {
@@ -807,8 +832,7 @@
       initCharts();
     }
 
-    // 1. Atualizar Estatísticas do Dashboard (Incluindo Total de Faturas)
-    // 1. Atualizar Estatísticas do Dashboard (Produtos, Alertas de Validade e Faturas)
+    // 1. Atualizar Estatísticas e Dados do Dashboard
     async function loadDashboardData() {
       try {
         // Carregar Produtos no Catálogo
@@ -816,6 +840,8 @@
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const products = await resProd.json();
+        allProductsCache = products; // Atualiza a cache global para uso nos gráficos e inventário
+        
         const statProducts = document.getElementById('stat-products');
         if (statProducts) statProducts.textContent = products.length || 0;
 
@@ -827,20 +853,23 @@
           const alertData = await resAlerts.json();
           const statAlerts = document.getElementById('stat-alerts');
           if (statAlerts) {
-            // Conta os lotes no intervalo de 30 dias (onde o lote que expira amanhã se encaixa)
             statAlerts.textContent = alertData.alert30Days ? alertData.alert30Days.length : 0;
           }
         }
 
-        // Carregar Histórico de Faturas do Mês
+        // Carregar Histórico de Faturas / Vendas
         const resSales = await fetch(`${API_BASE}/sales`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
+        let sales = [];
         if (resSales.ok) {
-          const sales = await resSales.json();
+          sales = await resSales.json();
           const statInvoices = document.getElementById('stat-invoices');
           if (statInvoices) statInvoices.textContent = sales.length || 0;
         }
+
+        // Renderizar os gráficos com os dados reais obtidos da API
+        renderCharts(products, sales);
 
       } catch (e) {
         console.error('Erro ao carregar dados do dashboard:', e);
@@ -1020,52 +1049,107 @@
       }
     }
 
-    // Carregar produtos no PDV automaticamente (Sem UUID manual)
+    // Carregar produtos no cache para a pesquisa interativa do PDV
     async function loadPosProducts() {
       try {
         const res = await fetch(`${API_BASE}/products`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
         availableProductsData = await res.json();
-        const select = document.getElementById('pos-product-select');
-        select.innerHTML = '<option value="">-- Selecione um medicamento --</option>';
-
-        availableProductsData.forEach(p => {
-          const batch = p.batches && p.batches[0] ? p.batches[0] : null;
-          const stockQty = batch ? batch.quantity : 0;
-          
-          select.innerHTML += `
-            <option value="${p.id}" data-price="${p.sellingPrice}" data-batch="${batch ? batch.id : ''}">
-              ${p.name} - ${p.sellingPrice.toLocaleString()} Kz (Stock: ${stockQty} un)
-            </option>
-          `;
-        });
       } catch (e) {
-        console.error('Erro ao carregar produtos', e);
+        console.error('Erro ao carregar produtos para o PDV', e);
       }
     }
 
-    function addItemToCart() {
-      const select = document.getElementById('pos-product-select');
-      const selectedOption = select.options[select.selectedIndex];
-      const productId = select.value;
+    // Função executada em tempo real quando o operador escreve no campo de pesquisa do PDV
+    function handlePosSearchInput(query) {
+      const dropdown = document.getElementById('pos-suggestions-dropdown');
+      const q = query.toLowerCase().trim();
 
-      if (!productId) {
-        showModal('Atenção', 'Por favor, selecione um medicamento da lista.', true);
+      if (!q || q.length < 1) {
+        dropdown.classList.add('hidden');
+        dropdown.innerHTML = '';
         return;
       }
 
-      const batchId = selectedOption.getAttribute('data-batch');
-      if (!batchId) {
-        showModal('Stock Indisponível', 'Este produto não possui lotes ativos no stock.', true);
+      // Filtra os produtos pelo nome ou código
+      const filtered = availableProductsData.filter(p => 
+        p.name.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q))
+      );
+
+      if (filtered.length === 0) {
+        dropdown.innerHTML = `<div class="p-3 text-xs text-gray-400 text-center">Nenhum medicamento encontrado.</div>`;
+        dropdown.classList.remove('hidden');
         return;
       }
 
-      const unitPrice = parseFloat(selectedOption.getAttribute('data-price'));
-      const quantity = parseInt(document.getElementById('pos-quantity').value) || 1;
+      // Renderiza as sugestões no dropdown
+      dropdown.innerHTML = filtered.map(p => {
+        const batch = p.batches && p.batches[0] ? p.batches[0] : null;
+        const stockQty = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
+        const batchId = batch ? batch.id : '';
+        const price = p.sellingPrice || 0;
+        const safeName = p.name.replace(/'/g, "\\'");
+
+        return `
+          <div onclick="selectPosProduct('${p.id}', '${safeName}', ${price}, '${batchId}', ${stockQty})" 
+               class="p-3 hover:bg-farmGreen-50 cursor-pointer border-b border-gray-100 text-xs flex justify-between items-center transition">
+            <div>
+              <p class="font-bold text-gray-900">${p.name}</p>
+              <p class="text-gray-400 font-mono text-[10px]">Cód: ${p.code || 'N/D'} | Lote: ${batch ? batch.batchNumber : 'Sem Lote'}</p>
+            </div>
+            <div class="text-right">
+              <span class="font-bold text-farmGreen-700 block">${price.toLocaleString()} Kz</span>
+              <span class="text-[10px] ${stockQty === 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}">Stock: ${stockQty} un</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      dropdown.classList.remove('hidden');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // Selecionar um produto da lista suspensa de sugestões
+    function selectPosProduct(id, name, price, batchId, stockQty) {
+      if (stockQty <= 0) {
+        showModal('Stock Esgotado', 'Este produto está esgotado ou sem lotes ativos.', true);
+        return;
+      }
+
+      document.getElementById('pos-selected-product-id').value = id;
+      document.getElementById('pos-selected-batch-id').value = batchId;
+      document.getElementById('pos-selected-price').value = price;
       
-      const productObj = availableProductsData.find(p => p.id === productId);
-      const productName = productObj ? productObj.name : 'Produto';
+      document.getElementById('pos-product-search').value = name;
+      document.getElementById('pos-suggestions-dropdown').classList.add('hidden');
+
+      // Exibe a etiqueta de confirmação do produto selecionado
+      document.getElementById('pos-selected-product-name').textContent = `Selecionado: ${name} (${price.toLocaleString()} Kz)`;
+      document.getElementById('pos-selected-product-info').classList.remove('hidden');
+    }
+
+    // Limpar seleção atual do PDV
+    function clearSelectedPosProduct() {
+      document.getElementById('pos-selected-product-id').value = '';
+      document.getElementById('pos-selected-batch-id').value = '';
+      document.getElementById('pos-selected-price').value = '0';
+      document.getElementById('pos-product-search').value = '';
+      document.getElementById('pos-selected-product-info').classList.add('hidden');
+    }
+
+    // Adicionar item selecionado ao carrinho do PDV
+    function addItemToCart() {
+      const productId = document.getElementById('pos-selected-product-id').value;
+      const batchId = document.getElementById('pos-selected-batch-id').value;
+      const unitPrice = parseFloat(document.getElementById('pos-selected-price').value);
+      const productName = document.getElementById('pos-product-search').value;
+      const quantity = parseInt(document.getElementById('pos-quantity').value) || 1;
+
+      if (!productId || !batchId) {
+        showModal('Atenção', 'Por favor, pesquise e selecione um medicamento válido da lista de sugestões.', true);
+        return;
+      }
 
       const existing = cartItems.find(item => item.productId === productId && item.batchId === batchId);
       if (existing) {
@@ -1073,7 +1157,9 @@
       } else {
         cartItems.push({ productId, batchId, productName, unitPrice, quantity });
       }
+
       renderCart();
+      clearSelectedPosProduct(); // Limpa a seleção para o próximo item
     }
 
     function renderCart() {
@@ -1436,36 +1522,98 @@
       }
     }
 
-    function initCharts() {
+    // 2. Função para construir e atualizar os gráficos dinamicamente
+    function renderCharts(products, sales) {
+      // --- GRÁFICO 1: EVOLUÇÃO DE VENDAS (Baseado nas faturas emitidas) ---
+      const salesByDate = {};
+      sales.forEach(s => {
+        const dateKey = new Date(s.createdAt).toLocaleDateString('pt-AO', { day: '2-digit', month: '2-digit' });
+        salesByDate[dateKey] = (salesByDate[dateKey] || 0) + s.total;
+      });
+
+      let salesLabels = Object.keys(salesByDate);
+      let salesDataValues = Object.values(salesByDate);
+
+      // Se ainda não houver vendas registadas, mostra uma indicação limpa
+      if (salesLabels.length === 0) {
+        salesLabels = ['Sem Vendas Registadas'];
+        salesDataValues = [0];
+      }
+
       const ctxSales = document.getElementById('salesChart').getContext('2d');
-      new Chart(ctxSales, {
+      if (salesChartInstance) salesChartInstance.destroy();
+
+      salesChartInstance = new Chart(ctxSales, {
         type: 'line',
         data: {
-          labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+          labels: salesLabels,
           datasets: [{
             label: 'Vendas (Kz)',
-            data: [45000, 72000, 58000, 95000, 120000, 145000, 98000],
+            data: salesDataValues,
             borderColor: '#16a34a',
             backgroundColor: 'rgba(22, 163, 74, 0.1)',
             fill: true,
-            tension: 0.3
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: '#16a34a'
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+            x: { grid: { display: false } }
+          }
+        }
       });
 
+      // --- GRÁFICO 2: DISTRIBUIÇÃO DE STOCK POR CATEGORIA (Todas as categorias reais) ---
+      const categoryStockMap = {};
+      products.forEach(p => {
+        const catName = p.category ? p.category.name : 'Geral / Outros';
+        const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
+        categoryStockMap[catName] = (categoryStockMap[catName] || 0) + totalStock;
+      });
+
+      const catLabels = Object.keys(categoryStockMap);
+      const catData = Object.values(categoryStockMap);
+
       const ctxStock = document.getElementById('stockChart').getContext('2d');
-      new Chart(ctxStock, {
+      if (stockChartInstance) stockChartInstance.destroy();
+
+      // Paleta de cores moderna para abranger múltiplas categorias
+      const bgColors = ['#16a34a', '#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#15803d', '#166534', '#059669', '#34d399', '#6ee7b7'];
+
+      stockChartInstance = new Chart(ctxStock, {
         type: 'doughnut',
         data: {
-          labels: ['Analgésicos', 'Antibióticos', 'Vitaminas', 'Outros'],
+          labels: catLabels.length > 0 ? catLabels : ['Sem Stock Registado'],
           datasets: [{
-            data: [45, 25, 20, 10],
-            backgroundColor: ['#16a34a', '#22c55e', '#86efac', '#dcfce7']
+            data: catData.length > 0 ? catData : [1],
+            backgroundColor: bgColors.slice(0, catLabels.length || 1),
+            borderWidth: 2,
+            borderColor: '#ffffff'
           }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { 
+          responsive: true, 
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 12, font: { size: 11 } }
+            }
+          }
+        }
       });
+    }
+
+    function initCharts() {
+      loadDashboardData();
     }
 
     let currentSaleDataForReturn = null;
@@ -1685,6 +1833,10 @@
     event.preventDefault();
       
       const rawCode = document.getElementById('prod-code').value.trim();
+      const qtyInput = document.getElementById('prod-qty')?.value;
+      const batchInput = document.getElementById('prod-batch')?.value.trim();
+      const expiryInput = document.getElementById('prod-expiry')?.value;
+
       const productPayload = {
         name: document.getElementById('prod-name').value,
         code: rawCode !== "" ? rawCode : undefined,
@@ -1694,12 +1846,15 @@
         sellingPrice: parseFloat(document.getElementById('prod-price').value),
         taxRate: parseFloat(document.getElementById('prod-tax').value),
         origin: document.getElementById('prod-origin').value,
-        minStock: parseInt(document.getElementById('prod-minstock').value)
+        minStock: parseInt(document.getElementById('prod-minstock').value),
+        // Envia também a quantidade para o backend processar o lote/stock de uma só vez
+        initialStock: qtyInput ? parseInt(qtyInput) : undefined,
+        batchNumber: batchInput || undefined,
+        expirationDate: expiryInput ? new Date(expiryInput + 'T00:00:00.000Z').toISOString() : undefined
       };
 
       try {
         if (editingProductId) {
-          // Pedido PUT para Atualizar
           const res = await fetch(`${API_BASE}/products/${editingProductId}`, {
             method: 'PUT',
             headers: {
@@ -1714,7 +1869,6 @@
 
           showToast('Produto atualizado com sucesso!', 'success');
         } else {
-          // Pedido POST para Novo Produto
           const resProduct = await fetch(`${API_BASE}/products`, {
             method: 'POST',
             headers: {
@@ -1726,28 +1880,6 @@
 
           const productData = await resProduct.json();
           if (!resProduct.ok) throw new Error(productData.error || 'Erro ao criar produto');
-
-          // Lote inicial opcional
-          const batchNumber = document.getElementById('prod-batch')?.value.trim();
-          const quantity = parseInt(document.getElementById('prod-qty')?.value);
-          const expiryDateInput = document.getElementById('prod-expiry')?.value;
-
-          if (batchNumber && quantity && expiryDateInput) {
-            const isoExpirationDate = new Date(expiryDateInput + 'T00:00:00.000Z').toISOString();
-            await fetch(`${API_BASE}/products/batches`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-              },
-              body: JSON.stringify({
-                batchNumber,
-                quantity,
-                expirationDate: isoExpirationDate,
-                productId: productData.id
-              })
-            });
-          }
 
           showToast('Produto cadastrado com sucesso!', 'success');
         }
@@ -1858,7 +1990,7 @@
     window.openEditProductModal = async function(productId) {
       editingProductId = productId;
       
-      // 1. Abre o modal e limpa/prepara o formulário
+      // 1. Abre o modal
       const modal = document.getElementById('product-modal');
       if (modal) modal.classList.remove('hidden');
 
@@ -1874,24 +2006,45 @@
         return;
       }
 
-      // 4. Preenche os campos do formulário com os dados atuais do produto
+      // 4. Preenche todos os campos cadastrais principais
       document.getElementById('prod-name').value = product.name || '';
       document.getElementById('prod-code').value = product.code || '';
       document.getElementById('prod-category').value = product.categoryId || '';
       document.getElementById('prod-supplier').value = product.supplierId || '';
       document.getElementById('prod-cost').value = product.costPrice || 0;
       document.getElementById('prod-price').value = product.sellingPrice || 0;
-      document.getElementById('prod-tax').value = product.taxRate || 0;
-      document.getElementById('prod-origin').value = product.origin || 'Nacional';
-      document.getElementById('prod-minstock').value = product.minStock || 5;
+      document.getElementById('prod-tax').value = product.taxRate || 0.14;
+      document.getElementById('prod-origin').value = product.origin || 'Importado';
+      document.getElementById('prod-minstock').value = product.minStock || 10;
 
-      // Oculta a secção de lote inicial durante a edição
+      // 5. Preenche ou exibe os dados do lote ativo/inicial (se o produto tiver lotes)
+      const activeBatch = product.batches && product.batches.length > 0 ? product.batches[0] : null;
+      
+      const batchInput = document.getElementById('prod-batch');
+      const qtyInput = document.getElementById('prod-qty');
+      const expiryInput = document.getElementById('prod-expiry');
+
+      if (activeBatch) {
+        if (batchInput) batchInput.value = activeBatch.batchNumber || '';
+        if (qtyInput) qtyInput.value = activeBatch.quantity || 0;
+        if (expiryInput && activeBatch.expirationDate) {
+          // Converte a data para o formato yyyy-mm-dd exigido pelo input type="date"
+          const dateOnly = new Date(activeBatch.expirationDate).toISOString().split('T')[0];
+          expiryInput.value = dateOnly;
+        }
+      } else {
+        if (batchInput) batchInput.value = '';
+        if (qtyInput) qtyInput.value = 0;
+        if (expiryInput) expiryInput.value = '';
+      }
+
+      // Garante que a secção do lote fica visível para permitir ajustar a quantidade se necessário
       const batchContainer = document.getElementById('initial-batch-container');
-      if (batchContainer) batchContainer.classList.add('hidden');
+      if (batchContainer) batchContainer.classList.remove('hidden');
 
-      // Altera o título do modal
-      const modalTitle = document.getElementById('product-modal-title');
-      if (modalTitle) modalTitle.textContent = 'Editar Produto';
+      // Altera o título do modal para refletir que estamos a editar
+      const modalHeaderTitle = document.querySelector('#product-modal h3 span:last-child');
+      if (modalHeaderTitle) modalHeaderTitle.textContent = 'Editar Produto e Stock';
     };
 
     // ==========================================

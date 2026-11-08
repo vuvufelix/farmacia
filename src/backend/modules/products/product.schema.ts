@@ -10,8 +10,11 @@ export const createProductSchema = z.object({
   taxExemption: z.string().optional(),
   minStock: z.number().int().nonnegative().default(10),
   categoryId: z.string().uuid('ID de categoria inválido'),
-  supplierId: z.string().uuid('ID de fornecedor inválido').optional()
+  supplierId: z.string().uuid('ID de fornecedor inválido').optional(),
+  initialStock: z.number().int().nonnegative().optional()
 })
+
+export const updateProductSchema = createProductSchema.partial()
 
 export const createBatchSchema = z.object({
   batchNumber: z.string().min(1, 'Número do lote é obrigatório'),

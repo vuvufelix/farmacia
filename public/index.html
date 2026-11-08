@@ -240,10 +240,10 @@
           </div>
 
           <div class="flex items-center space-x-4">
-            <div id="license-badge" class="flex items-center space-x-2 text-xs bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
-              <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <button onclick="openLicenseModal()" id="license-badge" class="flex items-center space-x-2 text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full border border-gray-200 transition cursor-pointer" title="Gerir Licença">
+              <span id="license-dot" class="w-2 h-2 rounded-full bg-green-500"></span>
               <span id="license-status-text" class="font-medium text-gray-700">Licença Ativa (10.000 Kz/mês)</span>
-            </div>
+            </button>
             <div class="border-l border-gray-200 h-6"></div>
             <div class="flex items-center space-x-2">
               <span id="user-display" class="text-sm font-semibold text-gray-700">Operador</span>
@@ -432,6 +432,65 @@
                 </div>
             </div>
             </div>
+        </div>
+
+        <!-- ================= MODAL DE ATIVAÇÃO DE LICENÇA (NENOVA TECH) ================= -->
+        <div id="license-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
+              <h3 class="font-bold text-gray-900 text-base flex items-center space-x-2">
+                <i data-lucide="shield-check" class="w-5 h-5 text-farmGreen-600"></i>
+                <span>Ativação & Renovação de Licença</span>
+              </h3>
+              <button onclick="closeLicenseModal()" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Painel Informativo do Estado da Licença -->
+            <div id="license-status-card" class="bg-farmGreen-50 border border-farmGreen-100 p-4 rounded-xl mb-4 space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600">Estado do Sistema:</span>
+                <span id="lic-modal-status-text" class="font-bold text-farmGreen-700 uppercase">A VERIFICAR...</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600">Válido até:</span>
+                <span id="lic-modal-expiry-date" class="font-mono font-bold text-gray-800">--/--/----</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-gray-600">Dias Restantes:</span>
+                <span id="lic-modal-days-left" class="font-bold text-gray-700">-- dias</span>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl mb-4 text-[11px] text-gray-600 space-y-1 leading-relaxed">
+              <p class="font-semibold text-gray-800">Planos de Subscrição Disponíveis:</p>
+              <ul class="list-disc list-inside space-y-0.5 text-gray-500">
+                <li><strong>1 Mês:</strong> 10.000 Kz</li>
+                <li><strong>3 Meses:</strong> 30.000 Kz</li>
+                <li><strong>6 Meses:</strong> 60.000 Kz</li>
+                <li><strong>1 Ano (12 Meses):</strong> 120.000 Kz</li>
+              </ul>
+              <p class="pt-1 text-gray-400">Após realizar o pagamento, solicite a sua chave de ativação ao suporte técnico da <strong>Nenova Tech</strong>.</p>
+            </div>
+
+            <form id="license-activation-form" onsubmit="submitLicenseKey(event)" class="space-y-4 text-xs">
+              <div>
+                <label class="block font-medium text-gray-700 mb-1">Chave de Ativação (License Key)</label>
+                <input type="text" id="lic-input-key" required placeholder="Ex: NV-1-XXXXXXXX ou NV-12-XXXXXXXX" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono text-sm uppercase tracking-wide">
+              </div>
+
+              <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100">
+                <button type="button" onclick="closeLicenseModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition">
+                  Fechar
+                </button>
+                <button type="submit" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-xl font-semibold transition shadow flex items-center space-x-1">
+                  <i data-lucide="key" class="w-4 h-4"></i>
+                  <span>Ativar Licença</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- ================= MODAL DE CADASTRO DE PRODUTO ================= -->
@@ -2016,6 +2075,100 @@
         setTimeout(() => toast.remove(), 300);
       }, 3500);
     }
+
+    // Abrir e carregar dados da licença
+    async function openLicenseModal() {
+      document.getElementById('license-modal').classList.remove('hidden');
+      await refreshLicenseStatus();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeLicenseModal() {
+      document.getElementById('license-modal').classList.add('hidden');
+    }
+
+    // Consultar o estado atual da licença no backend
+    async function refreshLicenseStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/license/status`, {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          const expiryDateStr = new Date(data.expiresAt).toLocaleDateString('pt-AO');
+          
+          const badgeText = document.getElementById('license-status-text');
+          const badgeDot = document.getElementById('license-dot');
+          
+          const modalStatusText = document.getElementById('lic-modal-status-text');
+          const modalExpiryDate = document.getElementById('lic-modal-expiry-date');
+          const modalDaysLeft = document.getElementById('lic-modal-days-left');
+          const modalCard = document.getElementById('license-status-card');
+
+          modalExpiryDate.textContent = expiryDateStr;
+          modalDaysLeft.textContent = `${data.daysRemaining} dia(s)`;
+
+          if (data.isActive) {
+            if (badgeText) badgeText.textContent = `Licença Ativa (Expira: ${expiryDateStr})`;
+            if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-green-500';
+
+            modalStatusText.textContent = 'SISTEMA ATIVO & REGULAR';
+            modalStatusText.className = 'font-bold text-farmGreen-700 uppercase';
+            modalCard.className = 'bg-farmGreen-50 border border-farmGreen-100 p-4 rounded-xl mb-4 space-y-2';
+          } else {
+            if (badgeText) badgeText.textContent = `LICENÇA EXPIRADA / BLOQUEADA`;
+            if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-red-500';
+
+            modalStatusText.textContent = 'SISTEMA BLOQUEADO (EXPIRADO)';
+            modalStatusText.className = 'font-bold text-red-600 uppercase';
+            modalCard.className = 'bg-red-50 border border-red-100 p-4 rounded-xl mb-4 space-y-2';
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao consultar licença:', e);
+      }
+    }
+
+    // Submeter a Chave de Ativação
+    async function submitLicenseKey(event) {
+      event.preventDefault();
+      const keyInput = document.getElementById('lic-input-key').value.trim();
+
+      if (!keyInput) {
+        showModal('Atenção', 'Insira uma chave de ativação válida.', true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/license/activate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ key: keyInput })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao ativar chave');
+
+        showModal('Licença Ativada', data.message);
+        document.getElementById('lic-input-key').value = '';
+        closeLicenseModal();
+        await refreshLicenseStatus();
+
+      } catch (e) {
+        showModal('Falha na Ativação', e.message, true);
+      }
+    }
+
+    // Verificar o status da licença ao iniciar o app
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (authToken) refreshLicenseStatus();
+      }, 1000);
+});
   </script>
 </body>
 </html>

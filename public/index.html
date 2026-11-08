@@ -30,28 +30,92 @@
     }
   </script>
   <style>
-  /* Regras exclusivas para a impressão */
+  /* ==========================================================
+     REGRAS DE IMPRESSÃO SEPARADAS (TALÃO 80mm vs RELATÓRIO A4)
+     ========================================================== */
+
+  /* 1. MODO TALÃO TÉRMICO (80mm) */
   @media print {
-    /* Ocultar a barra lateral e o cabeçalho superior na impressão */
-    aside, header {
-      display: none !important;
+    body.printing-invoice * {
+      visibility: hidden !important;
     }
 
-    /* Remover margens e largura fixa do contentor principal para ocupar a folha inteira */
-    #app-view, .flex-1, main {
+    body.printing-invoice #invoice-modal, 
+    body.printing-invoice #invoice-modal * {
+      visibility: visible !important;
+    }
+
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+
+    body.printing-invoice {
+      background: white !important;
       margin: 0 !important;
       padding: 0 !important;
-      width: 100% !important;
-      overflow: visible !important;
+      font-family: monospace, sans-serif;
     }
 
-    /* Garantir que o relatório fiscal fica limpo e legível em papel */
-    #tab-reports {
+    body.printing-invoice #invoice-modal {
       display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
       width: 100% !important;
+      max-width: 80mm !important;
+      margin: 0 !important;
+      padding: 2mm !important;
+      background: white !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    body.printing-invoice #invoice-modal button {
+      display: none !important;
     }
   }
-</style>
+
+  /* 2. MODO RELATÓRIO FISCAL (Formato A4) */
+  @media print {
+    body.printing-report * {
+      visibility: hidden !important;
+    }
+
+    body.printing-report #report-result-container, 
+    body.printing-report #report-result-container * {
+      visibility: visible !important;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
+    body.printing-report {
+      background: white !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    body.printing-report #report-result-container {
+      display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    body.printing-report #report-result-container button {
+      display: none !important;
+    }
+  }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
 
@@ -119,7 +183,7 @@
 
   <!-- ================= MAIN APP VIEW ================= -->
   <div id="app-view" class="hidden flex h-screen bg-gray-50 overflow-hidden">
-    <!-- Sidebar Navigation (Fixa à Esquerda) -->
+    <!-- Sidebar Navigation -->
     <aside class="w-64 bg-white border-r border-gray-200 flex flex-col h-full fixed inset-y-0 left-0 z-30 shadow-sm p-4 space-y-1">
       <div class="flex items-center space-x-3 px-3 py-4 mb-2 border-b border-gray-100">
         <div class="w-9 h-9 bg-farmGreen-600 text-white rounded-lg flex items-center justify-center shadow">
@@ -165,10 +229,10 @@
       </button>
     </aside>
 
-    <!-- Contentor Principal (Com ml-64 para respeitar a sidebar) -->
+    <!-- Contentor Principal -->
     <div class="flex-1 flex flex-col h-full ml-64 overflow-y-auto">
       
-      <!-- Top Navbar (Fixa no topo da área de conteúdo) -->
+      <!-- Top Navbar -->
       <header class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
         <div class="px-8 h-16 flex items-center justify-between">
           <div class="flex items-center space-x-3">
@@ -280,7 +344,7 @@
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     <span>Atualizar</span>
                 </button>
-                </div>
+            </div>
           </div>
 
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -297,7 +361,6 @@
                 </tr>
                 </thead>
                 <tbody id="inventory-table-body">
-                <!-- Linhas de produtos injetadas via JS -->
                 </tbody>
             </table>
           </div>
@@ -313,47 +376,54 @@
             </button>
           </div>
           <div id="alerts-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Preenchido via JS -->
           </div>
         </section>
 
-        <!-- ================= MODAL DE IMPRESSÃO DA FATURA (TALÃO AGT) ================= -->
+        <!-- ================= MODAL DE IMPRESSÃO DA FATURA (TALÃO AGT 80mm) ================= -->
         <div id="invoice-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 flex flex-col items-center">
-            <!-- Cabeçalho da Fatura -->
-            <div class="text-center space-y-1 mb-4 border-b border-dashed border-gray-300 pb-4 w-full">
-                <div class="inline-flex items-center justify-center w-10 h-10 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-1">
-                <i data-lucide="cross" class="w-5 h-5"></i>
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 border border-gray-100 flex flex-col items-center font-sans">
+            
+            <div class="text-center space-y-0.5 mb-3 border-b border-dashed border-gray-300 pb-3 w-full">
+                <div class="inline-flex items-center justify-center w-8 h-8 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-1">
+                <i data-lucide="cross" class="w-4 h-4"></i>
                 </div>
-                <h2 class="font-bold text-gray-900 text-base">FARMÁCIA NENOVA TECH</h2>
-                <p class="text-xs text-gray-500">NIF: 5412345678 | Luanda - Angola</p>
-                <p class="text-xs font-semibold text-farmGreen-700 mt-1 uppercase" id="inv-modal-number">FR FMN2026/0000</p>
-                <p class="text-[10px] text-gray-400" id="inv-modal-date">07/11/2026 00:00</p>
+                <h2 class="font-bold text-gray-900 text-sm tracking-wide">FARMÁCIA NENOVA TECH</h2>
+                <p class="text-[11px] text-gray-500">NIF: 5412345678 | Luanda - Angola</p>
+                <p class="text-xs font-bold text-farmGreen-700 mt-1 uppercase" id="inv-modal-number">FR FMN2026/0000</p>
+                <p class="text-[10px] text-gray-400" id="inv-modal-date">08/11/2026 00:00</p>
             </div>
 
-            <!-- Detalhes dos Itens -->
-            <div class="w-full text-xs space-y-2 mb-4 border-b border-dashed border-gray-300 pb-4 max-h-48 overflow-y-auto" id="inv-modal-items">
-                <!-- Itens inseridos dinamicamente -->
+            <div class="w-full text-xs space-y-2 mb-3 border-b border-dashed border-gray-300 pb-3 max-h-40 overflow-y-auto" id="inv-modal-items">
             </div>
 
-            <!-- Resumo Financeiro -->
-            <div class="w-full text-xs space-y-1 mb-4 border-b border-dashed border-gray-300 pb-4">
-                <div class="flex justify-between text-gray-600"><span>Subtotal:</span><span id="inv-modal-subtotal">0 Kz</span></div>
-                <div class="flex justify-between text-gray-600"><span>IVA (14%):</span><span id="inv-modal-tax">0 Kz</span></div>
-                <div class="flex justify-between font-bold text-gray-900 text-sm pt-1"><span>Total Pago:</span><span id="inv-modal-total" class="text-farmGreen-700">0 Kz</span></div>
-                <div class="flex justify-between text-[11px] text-gray-500 pt-1"><span>Pagamento:</span><span id="inv-modal-method" class="font-medium">MULTICAIXA</span></div>
+            <div class="w-full text-xs space-y-1.5 mb-3 border-b border-dashed border-gray-300 pb-3">
+                <div class="flex justify-between items-center text-gray-600">
+                  <span>Subtotal:</span>
+                  <span id="inv-modal-subtotal" class="font-medium text-gray-800">0 Kz</span>
+                </div>
+                <div class="flex justify-between items-center text-gray-600">
+                  <span>IVA (14%):</span>
+                  <span id="inv-modal-tax" class="font-medium text-gray-800">0 Kz</span>
+                </div>
+                <div class="flex justify-between items-center font-bold text-gray-900 text-sm pt-1 border-t border-gray-100">
+                  <span>Total Pago:</span>
+                  <span id="inv-modal-total" class="text-farmGreen-700">0 Kz</span>
+                </div>
+                <div class="flex justify-between items-center text-[11px] text-gray-500 pt-1">
+                  <span>Pagamento:</span>
+                  <span id="inv-modal-method" class="font-semibold text-gray-700 uppercase">MULTICAIXA</span>
+                </div>
             </div>
 
-            <!-- Assinatura Fiscal / QR Code AGT -->
-            <div class="text-center space-y-2 w-full">
-                <div class="bg-gray-100 p-2 rounded-lg font-mono text-[9px] text-gray-500 break-all" id="inv-modal-hash">
+            <div class="text-center space-y-1.5 w-full">
+                <div class="bg-gray-50 p-2 rounded-lg font-mono text-[9px] text-gray-600 border border-gray-100 break-all" id="inv-modal-hash">
                 Hash: XXXX-XXXX-XXXX-XXXX
                 </div>
-                <p class="text-[10px] text-gray-400">Processado por programa certificado nº 000/AGT/2026</p>
+                <p class="text-[9px] text-gray-400">Processado por programa certificado nº 000/AGT/2026</p>
                 
                 <div class="flex space-x-2 pt-2">
-                <button onclick="window.print()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
-                    <i data-lucide="printer" class="w-4 h-4"></i>
+                <button onclick="printInvoiceTicket()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                     <span>Imprimir</span>
                 </button>
                 <button onclick="closeInvoiceModal()" class="flex-1 bg-farmGreen-600 hover:bg-farmGreen-700 text-white py-2 rounded-xl text-xs font-semibold transition">
@@ -430,7 +500,6 @@
                 </div>
                 </div>
 
-                <!-- Secção de Lote Inicial (Opcional ou Obrigatório) -->
                 <div id="initial-batch-container" class="border-t border-gray-100 pt-3 mt-3">
                 <p class="font-bold text-gray-800 mb-2 flex items-center space-x-1">
                     <i data-lucide="calendar" class="w-4 h-4 text-farmGreen-600"></i>
@@ -464,7 +533,7 @@
             </div>
         </div>
 
-        <!-- TAB: PDV / SALES (AUTOMATIZADO - SEM UUIDs) -->
+        <!-- TAB: PDV / SALES -->
         <section id="tab-pos" class="hidden space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
@@ -488,12 +557,10 @@
                 </div>
               </div>
 
-              <!-- Secção de Pesquisa e Seleção de Medicamento com Sugestões -->
               <div class="border-t border-gray-100 pt-4 space-y-3">
                 <h4 class="font-semibold text-gray-800 text-sm">Pesquisar e Selecionar Medicamento (FEFO Automático)</h4>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 relative">
-                  <!-- Campo de Pesquisa com Autocomplete -->
                   <div class="md:col-span-2 relative">
                     <div class="relative">
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
@@ -502,9 +569,7 @@
                       <input type="text" id="pos-product-search" placeholder="Escreva o nome do medicamento para pesquisar..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition" oninput="handlePosSearchInput(this.value)">
                     </div>
                     
-                    <!-- Lista de Sugestões (Dropdown dinâmico) -->
                     <div id="pos-suggestions-dropdown" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-30 hidden">
-                      <!-- Sugestões injetadas via JS -->
                     </div>
                   </div>
 
@@ -513,7 +578,6 @@
                   </div>
                 </div>
 
-                <!-- Campos ocultos para guardar o ID e dados do produto selecionado -->
                 <input type="hidden" id="pos-selected-product-id" value="">
                 <input type="hidden" id="pos-selected-batch-id" value="">
                 <input type="hidden" id="pos-selected-price" value="0">
@@ -537,7 +601,6 @@
               </div>
             </div>
 
-            <!-- POS Summary & Submit -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-6">
               <div>
                 <h3 class="font-bold text-gray-900 text-lg mb-4">Resumo da Fatura</h3>
@@ -580,7 +643,7 @@
           </div>
         </section>
 
-        <!-- TAB: RETURNS (ATUALIZADO - PESQUISA POR NÚMERO DE FATURA) -->
+        <!-- TAB: RETURNS -->
         <section id="tab-returns" class="hidden space-y-6">
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-xl mx-auto space-y-4">
             <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
@@ -608,7 +671,6 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Selecione o Medicamento a Devolver</label>
                 <select id="return-item-select" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
-                  <!-- Preenchido dinamicamente -->
                 </select>
               </div>
 
@@ -639,7 +701,7 @@
           </div>
         </section>
 
-        <!-- TAB: HISTORY (HISTÓRICO DE VENDAS) -->
+        <!-- TAB: HISTORY -->
         <section id="tab-history" class="hidden space-y-6">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
@@ -665,13 +727,12 @@
                 </tr>
               </thead>
               <tbody id="history-table-body" class="divide-y divide-gray-100 text-sm">
-                <!-- Preenchido dinamicamente via JS -->
               </tbody>
             </table>
           </div>
         </section>
 
-        <!-- TAB: REPORTS (RELATÓRIO FISCAL AGT) -->
+        <!-- TAB: REPORTS -->
         <section id="tab-reports" class="hidden space-y-6">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
@@ -693,7 +754,6 @@
             </div>
           </div>
 
-          <!-- Contentor do Relatório (Com suporte para impressão) -->
           <div id="report-result-container" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
             <p class="text-sm text-gray-500 text-center py-12">Selecione o período e clique em "Gerar Relatório" para visualizar o fecho fiscal consolidado e detalhado.</p>
           </div>
@@ -709,7 +769,6 @@
     let authToken = localStorage.getItem('token') || '';
     let availableProductsData = [];
     let cartItems = [];
-    // Variáveis Globais de Estado
     let productToDeleteId = null;
     let onlyLowStockActive = false;
     let allProductsCache = [];
@@ -717,13 +776,10 @@
     let salesChartInstance = null;
     let stockChartInstance = null;
 
-    // Função auxiliar para determinar o Role do utilizador logado
     function checkIsAdmin() {
-      // 1. Tenta pelo localStorage
       const storedRole = localStorage.getItem('userRole') || localStorage.getItem('currentUserRole');
       if (storedRole && storedRole.trim().toUpperCase() === 'ADMIN') return true;
 
-      // 2. Tenta descodificar o Token JWT
       if (typeof authToken !== 'undefined' && authToken) {
         try {
           const payloadBase64 = authToken.split('.')[1];
@@ -732,14 +788,10 @@
         } catch (e) {}
       }
 
-      // 3. Tenta pela variável global (se existir)
       if (typeof currentUserRole !== 'undefined' && currentUserRole === 'ADMIN') return true;
-
-      // Por omissão para testes de desenvolvimento, se não estiver restrito
       return false;
     }
 
-    // Sistema de Modal Profissional
     function showModal(title, message, isError = false) {
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-message').textContent = message;
@@ -762,25 +814,24 @@
       document.getElementById('app-modal').classList.add('hidden');
     }
 
-    // Inicialização de Ícones
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       
       const savedToken = localStorage.getItem('token');
       if (savedToken) {
         authToken = savedToken;
-        applyUserPermissions(); // Aplica restrições ao recuperar a sessão
+        applyUserPermissions();
         showAppView();
       }
     });
 
     function switchTab(tabId) {
-      ['dashboard', 'inventory', 'alerts', 'pos', 'suppliers', 'returns', 'reports'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
+      ['dashboard', 'inventory', 'alerts', 'pos', 'suppliers', 'returns', 'reports', 'history'].forEach(t => {
+        document.getElementById(`tab-${t}`)?.classList.add('hidden');
         document.getElementById(`nav-${t}`)?.classList.remove('bg-farmGreen-50', 'text-farmGreen-700');
         document.getElementById(`nav-${t}`)?.classList.add('text-gray-600', 'hover:bg-gray-50');
       });
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
       document.getElementById(`nav-${tabId}`)?.classList.add('bg-farmGreen-50', 'text-farmGreen-700');
       document.getElementById(`nav-${tabId}`)?.classList.remove('text-gray-600', 'hover:bg-gray-50');
 
@@ -788,6 +839,7 @@
       if (tabId === 'inventory') loadInventory();
       if (tabId === 'alerts') loadExpirationAlerts();
       if (tabId === 'pos') loadPosProducts();
+      if (tabId === 'history') loadSalesHistory();
     }
 
     async function handleLogin(e) {
@@ -807,10 +859,7 @@
 
         authToken = data.token;
         localStorage.setItem('token', authToken);
-
-        // Aplicar restrições visuais imediatamente após o login
         applyUserPermissions();
-
         showAppView();
       } catch (err) {
         errorDiv.textContent = err.message;
@@ -832,20 +881,17 @@
       initCharts();
     }
 
-    // 1. Atualizar Estatísticas e Dados do Dashboard
     async function loadDashboardData() {
       try {
-        // Carregar Produtos no Catálogo
         const resProd = await fetch(`${API_BASE}/products`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
         const products = await resProd.json();
-        allProductsCache = products; // Atualiza a cache global para uso nos gráficos e inventário
+        allProductsCache = products;
         
         const statProducts = document.getElementById('stat-products');
         if (statProducts) statProducts.textContent = products.length || 0;
 
-        // Carregar Alertas FEFO (Lotes a Vencer nos próximos 30 dias)
         const resAlerts = await fetch(`${API_BASE}/products/alerts/expiration`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -857,7 +903,6 @@
           }
         }
 
-        // Carregar Histórico de Faturas / Vendas
         const resSales = await fetch(`${API_BASE}/sales`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -868,7 +913,6 @@
           if (statInvoices) statInvoices.textContent = sales.length || 0;
         }
 
-        // Renderizar os gráficos com os dados reais obtidos da API
         renderCharts(products, sales);
 
       } catch (e) {
@@ -876,10 +920,7 @@
       }
     }
 
-    // ==========================================
-  // 1. CARREGAMENTO E FILTRAGEM DO INVENTÁRIO
-  // ==========================================
-  async function loadInventory() {
+    async function loadInventory() {
       try {
         const res = await fetch(`${API_BASE}/products`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
@@ -938,7 +979,6 @@
         return;
       }
 
-      // Verificação segura se o utilizador logado é ADMINISTRADOR
       const isAdmin = checkIsAdmin();
 
       products.forEach(p => {
@@ -956,7 +996,7 @@
               <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
             </td>
             <td class="p-4 text-gray-600">${p.category ? p.category.name : 'N/D'}</td>
-            <td class="p-4 font-bold text-farmGreen-700">${(p.sellingPrice || 0).toLocaleString()} Kz</td>
+            <td class="p-4 font-bold text-farmGreen-700">${(p.sellingPrice || 0).toLocaleString('pt-AO')} Kz</td>
             <td class="p-4 font-mono text-gray-700">${batchNumber}</td>
             <td class="p-4 text-gray-600">${expiryDate}</td>
             <td class="p-4">
@@ -966,12 +1006,9 @@
             </td>
             <td class="p-4 text-right space-x-1">
               ${isAdmin ? `
-                <!-- BOTÃO DE EDITAR (Restrito apenas a ADMIN) -->
                 <button onclick="openEditProductModal('${p.id}')" class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Produto">
                   <i data-lucide="edit-3" class="w-4 h-4"></i>
                 </button>
-
-                <!-- BOTÃO DE ELIMINAR (Restrito apenas a ADMIN) -->
                 <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition" title="Eliminar Produto">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
@@ -999,7 +1036,6 @@
         const alert90List = data.alert90Days || [];
         const alert60_90List = [...alert60List, ...alert90List];
 
-        // Função auxiliar para criar a lista de itens
         const renderList = (items) => {
           if (items.length === 0) return `<p class="text-xs text-gray-400 italic mt-2">Nenhum lote nesta faixa.</p>`;
           return `
@@ -1049,7 +1085,6 @@
       }
     }
 
-    // Carregar produtos no cache para a pesquisa interativa do PDV
     async function loadPosProducts() {
       try {
         const res = await fetch(`${API_BASE}/products`, {
@@ -1061,7 +1096,6 @@
       }
     }
 
-    // Função executada em tempo real quando o operador escreve no campo de pesquisa do PDV
     function handlePosSearchInput(query) {
       const dropdown = document.getElementById('pos-suggestions-dropdown');
       const q = query.toLowerCase().trim();
@@ -1072,7 +1106,6 @@
         return;
       }
 
-      // Filtra os produtos pelo nome ou código
       const filtered = availableProductsData.filter(p => 
         p.name.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q))
       );
@@ -1083,7 +1116,6 @@
         return;
       }
 
-      // Renderiza as sugestões no dropdown
       dropdown.innerHTML = filtered.map(p => {
         const batch = p.batches && p.batches[0] ? p.batches[0] : null;
         const stockQty = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
@@ -1099,7 +1131,7 @@
               <p class="text-gray-400 font-mono text-[10px]">Cód: ${p.code || 'N/D'} | Lote: ${batch ? batch.batchNumber : 'Sem Lote'}</p>
             </div>
             <div class="text-right">
-              <span class="font-bold text-farmGreen-700 block">${price.toLocaleString()} Kz</span>
+              <span class="font-bold text-farmGreen-700 block">${price.toLocaleString('pt-AO')} Kz</span>
               <span class="text-[10px] ${stockQty === 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}">Stock: ${stockQty} un</span>
             </div>
           </div>
@@ -1110,7 +1142,6 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // Selecionar um produto da lista suspensa de sugestões
     function selectPosProduct(id, name, price, batchId, stockQty) {
       if (stockQty <= 0) {
         showModal('Stock Esgotado', 'Este produto está esgotado ou sem lotes ativos.', true);
@@ -1124,12 +1155,10 @@
       document.getElementById('pos-product-search').value = name;
       document.getElementById('pos-suggestions-dropdown').classList.add('hidden');
 
-      // Exibe a etiqueta de confirmação do produto selecionado
-      document.getElementById('pos-selected-product-name').textContent = `Selecionado: ${name} (${price.toLocaleString()} Kz)`;
+      document.getElementById('pos-selected-product-name').textContent = `Selecionado: ${name} (${price.toLocaleString('pt-AO')} Kz)`;
       document.getElementById('pos-selected-product-info').classList.remove('hidden');
     }
 
-    // Limpar seleção atual do PDV
     function clearSelectedPosProduct() {
       document.getElementById('pos-selected-product-id').value = '';
       document.getElementById('pos-selected-batch-id').value = '';
@@ -1138,7 +1167,6 @@
       document.getElementById('pos-selected-product-info').classList.add('hidden');
     }
 
-    // Adicionar item selecionado ao carrinho do PDV
     function addItemToCart() {
       const productId = document.getElementById('pos-selected-product-id').value;
       const batchId = document.getElementById('pos-selected-batch-id').value;
@@ -1159,7 +1187,7 @@
       }
 
       renderCart();
-      clearSelectedPosProduct(); // Limpa a seleção para o próximo item
+      clearSelectedPosProduct();
     }
 
     function renderCart() {
@@ -1186,10 +1214,10 @@
           <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm">
             <div>
               <span class="font-semibold text-gray-900">${item.productName}</span>
-              <div class="text-xs text-gray-500">Qtd: ${item.quantity} x ${item.unitPrice.toLocaleString()} Kz</div>
+              <div class="text-xs text-gray-500">Qtd: ${item.quantity} x ${item.unitPrice.toLocaleString('pt-AO')} Kz</div>
             </div>
             <div class="flex items-center space-x-3">
-              <span class="font-bold text-gray-800">${itemTotal.toLocaleString()} Kz</span>
+              <span class="font-bold text-gray-800">${itemTotal.toLocaleString('pt-AO')} Kz</span>
               <button onclick="cartItems.splice(${idx},1);renderCart();" class="text-red-500 hover:text-red-700 p-1">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
@@ -1199,13 +1227,12 @@
       }).join('');
 
       const totalSum = subtotalSum + taxSum;
-      document.getElementById('pos-subtotal').textContent = subtotalSum.toLocaleString() + ' Kz';
-      document.getElementById('pos-tax').textContent = taxSum.toLocaleString() + ' Kz';
-      document.getElementById('pos-total').textContent = totalSum.toLocaleString() + ' Kz';
+      document.getElementById('pos-subtotal').textContent = subtotalSum.toLocaleString('pt-AO') + ' Kz';
+      document.getElementById('pos-tax').textContent = taxSum.toLocaleString('pt-AO') + ' Kz';
+      document.getElementById('pos-total').textContent = totalSum.toLocaleString('pt-AO') + ' Kz';
       lucide.createIcons();
     }
 
-    // 2. Finalizar Venda e Exibir a Fatura AGT Emitida
     async function submitSale() {
       const paymentMethod = document.getElementById('pos-payment-method').value;
       if (cartItems.length === 0) {
@@ -1234,53 +1261,68 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao processar venda');
 
-        // Limpar carrinho e atualizar produtos/dashboard
         cartItems = [];
         renderCart();
         loadPosProducts();
         loadDashboardData();
 
-        // Abrir o Talão de Fatura Emitida
         openInvoiceModal(data);
       } catch (e) {
         showModal('Erro na Venda', e.message, true);
       }
     }
 
-    // 3. Abrir e Preencher o Modal da Fatura
     function openInvoiceModal(saleData) {
-      document.getElementById('inv-modal-number').textContent = saleData.invoiceNumber;
-      document.getElementById('inv-modal-date').textContent = new Date(saleData.createdAt).toLocaleString();
-      document.getElementById('inv-modal-subtotal').textContent = (saleData.subtotal || 0).toLocaleString() + ' Kz';
-      document.getElementById('inv-modal-tax').textContent = (saleData.taxTotal || 0).toLocaleString() + ' Kz';
-      document.getElementById('inv-modal-total').textContent = (saleData.total || 0).toLocaleString() + ' Kz';
-      document.getElementById('inv-modal-method').textContent = saleData.paymentMethod;
+      document.getElementById('inv-modal-number').textContent = saleData.invoiceNumber || 'FR FMN2026/0000';
+      document.getElementById('inv-modal-date').textContent = new Date(saleData.createdAt || Date.now()).toLocaleString('pt-AO');
+      document.getElementById('inv-modal-subtotal').textContent = (saleData.subtotal || 0).toLocaleString('pt-AO') + ' Kz';
+      document.getElementById('inv-modal-tax').textContent = (saleData.taxTotal || 0).toLocaleString('pt-AO') + ' Kz';
+      document.getElementById('inv-modal-total').textContent = (saleData.total || 0).toLocaleString('pt-AO') + ' Kz';
+      document.getElementById('inv-modal-method').textContent = saleData.paymentMethod || 'MULTICAIXA';
       document.getElementById('inv-modal-hash').textContent = `Hash AGT: ${saleData.hash || 'N/A'}`;
 
       const itemsContainer = document.getElementById('inv-modal-items');
       itemsContainer.innerHTML = '';
       
-      if (saleData.items) {
+      if (saleData.items && saleData.items.length > 0) {
         saleData.items.forEach(item => {
-          const prodName = item.product ? item.product.name : 'Medicamento';
+          const prodName = item.product ? item.product.name : (item.productName || 'Medicamento');
+          const itemTotal = item.total || (item.unitPrice * item.quantity);
+          
           itemsContainer.innerHTML += `
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center text-xs py-0.5">
               <div>
                 <p class="font-semibold text-gray-800">${prodName}</p>
-                <p class="text-[10px] text-gray-400">${item.quantity}x ${item.unitPrice.toLocaleString()} Kz</p>
+                <p class="text-[10px] text-gray-400">${item.quantity}x ${item.unitPrice.toLocaleString('pt-AO')} Kz</p>
               </div>
-              <span class="font-bold text-gray-900">${(item.total || (item.unitPrice * item.quantity)).toLocaleString()} Kz</span>
+              <span class="font-bold text-gray-900">${itemTotal.toLocaleString('pt-AO')} Kz</span>
             </div>
           `;
         });
+      } else {
+        itemsContainer.innerHTML = `<p class="text-xs text-gray-400 text-center">Sem itens catalogados.</p>`;
       }
 
       document.getElementById('invoice-modal').classList.remove('hidden');
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function closeInvoiceModal() {
       document.getElementById('invoice-modal').classList.add('hidden');
+    }
+
+    /* Função dedicada para imprimir o talão térmico 80mm */
+    function printInvoiceTicket() {
+      document.body.classList.add('printing-invoice');
+      window.print();
+      document.body.classList.remove('printing-invoice');
+    }
+
+    /* Função dedicada para imprimir o relatório fiscal em A4 */
+    function printFiscalReport() {
+      document.body.classList.add('printing-report');
+      window.print();
+      document.body.classList.remove('printing-report');
     }
 
     async function generateShalinaOrder() {
@@ -1293,14 +1335,12 @@
         
         const box = document.getElementById('supplier-order-result');
 
-        // Se não houver itens abaixo do stock mínimo
         if (!data.hasItems) {
           showModal('Stock Regular', data.message || 'Não há produtos abaixo do stock mínimo para este fornecedor.');
           box.classList.add('hidden');
           return;
         }
 
-        // Se houver itens, exibe o texto formatado e disponibiliza o link do WhatsApp
         let outputHtml = `<p class="font-bold text-farmGreen-800 mb-2">✅ Encomenda Pronta para Envio:</p>`;
         outputHtml += `<p class="whitespace-pre-line mb-3">${data.whatsappMessage || ''}</p>`;
         
@@ -1321,34 +1361,6 @@
       }
     }
 
-    async function submitReturn() {
-      const saleId = document.getElementById('return-sale-id').value;
-      const saleItemId = document.getElementById('return-item-id').value;
-      const quantity = parseInt(document.getElementById('return-qty').value);
-      const reason = document.getElementById('return-reason').value;
-
-      try {
-        const payloadBase64 = authToken.split('.')[1];
-        const decodedPayload = JSON.parse(atob(payloadBase64));
-        const userId = decodedPayload.id;
-
-        const res = await fetch(`${API_BASE}/sales/returns`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ saleId, saleItemId, userId, quantity, reason })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro ao processar devolução');
-        
-        showModal('Sucesso', 'Devolução processada com sucesso e stock reposto no lote!');
-      } catch (e) {
-        showModal('Erro', e.message, true);
-      }
-    }
-
     async function loadMonthlyReport() {
       const month = document.getElementById('report-month').value;
       const year = document.getElementById('report-year').value;
@@ -1362,7 +1374,6 @@
 
         const container = document.getElementById('report-result-container');
         
-        // 1. Formatar operadores para exibição em lista (CORRIGIDO)
         let operatorsHtml = '';
         if (data.salesByOperator) {
           for (const [opName, info] of Object.entries(data.salesByOperator)) {
@@ -1372,17 +1383,16 @@
                   <span class="font-bold text-gray-900">${opName}</span>
                   <p class="text-xs text-gray-500">Faturas emitidas: ${info.count}</p>
                 </div>
-                <span class="font-bold text-farmGreen-700">${info.total.toLocaleString()} Kz</span>
+                <span class="font-bold text-farmGreen-700">${info.total.toLocaleString('pt-AO')} Kz</span>
               </div>
             `;
           }
         }
 
-        // 2. Formatar detalhes das faturas e itens
         let detailsHtml = '';
         if (data.salesDetails && data.salesDetails.length > 0) {
           data.salesDetails.forEach(sale => {
-            const dateStr = new Date(sale.createdAt).toLocaleString();
+            const dateStr = new Date(sale.createdAt).toLocaleString('pt-AO');
             let itemsRows = '';
             
             sale.items.forEach(item => {
@@ -1391,9 +1401,9 @@
                 <tr class="text-xs border-b border-gray-100 bg-gray-50/50">
                   <td class="p-2.5 font-medium text-gray-800">${prodName}</td>
                   <td class="p-2.5 text-center">${item.quantity} un</td>
-                  <td class="p-2.5 text-right">${item.unitPrice.toLocaleString()} Kz</td>
-                  <td class="p-2.5 text-right text-blue-600">${(item.taxAmount || 0).toLocaleString()} Kz (14%)</td>
-                  <td class="p-2.5 text-right font-bold text-gray-900">${item.total.toLocaleString()} Kz</td>
+                  <td class="p-2.5 text-right">${item.unitPrice.toLocaleString('pt-AO')} Kz</td>
+                  <td class="p-2.5 text-right text-blue-600">${(item.taxAmount || 0).toLocaleString('pt-AO')} Kz (14%)</td>
+                  <td class="p-2.5 text-right font-bold text-gray-900">${item.total.toLocaleString('pt-AO')} Kz</td>
                 </tr>
               `;
             });
@@ -1407,7 +1417,7 @@
                   </div>
                   <div>
                     <span class="bg-white px-2.5 py-1 rounded border border-gray-200 font-medium">Operador: ${sale.user ? sale.user.name : 'N/D'}</span>
-                    <span class="ml-2 bg-farmGreen-100 text-farmGreen-800 px-2.5 py-1 rounded">Total: ${sale.total.toLocaleString()} Kz</span>
+                    <span class="ml-2 bg-farmGreen-100 text-farmGreen-800 px-2.5 py-1 rounded">Total: ${sale.total.toLocaleString('pt-AO')} Kz</span>
                   </div>
                 </div>
                 <table class="w-full text-left">
@@ -1431,11 +1441,10 @@
           detailsHtml = `<p class="text-xs text-gray-400 text-center py-4">Sem detalhes de faturas para este período.</p>`;
         }
 
-        // 3. Formatar tabela de Devoluções e Motivos Fiscais
         let returnsHtml = '';
         if (data.returnsDetails && data.returnsDetails.length > 0) {
           data.returnsDetails.forEach(ret => {
-            const dateStr = new Date(ret.createdAt).toLocaleString();
+            const dateStr = new Date(ret.createdAt).toLocaleString('pt-AO');
             const prodName = ret.saleItem && ret.saleItem.product ? ret.saleItem.product.name : 'Produto';
             
             returnsHtml += `
@@ -1444,7 +1453,7 @@
                 <td class="p-2.5 text-gray-600">${dateStr}</td>
                 <td class="p-2.5 font-medium text-gray-800">${prodName} (${ret.quantity} un)</td>
                 <td class="p-2.5 font-mono text-gray-700">${ret.reason}</td>
-                <td class="p-2.5 text-right font-bold text-red-600">-${(ret.refundAmount || 0).toLocaleString()} Kz</td>
+                <td class="p-2.5 text-right font-bold text-red-600">-${(ret.refundAmount || 0).toLocaleString('pt-AO')} Kz</td>
               </tr>
             `;
           });
@@ -1452,14 +1461,13 @@
           returnsHtml = `<tr><td colspan="5" class="p-4 text-center text-gray-400 text-xs">Sem registo de trocas ou devoluções neste período.</td></tr>`;
         }
 
-        // 4. Montar estrutura visual completa
         container.innerHTML = `
           <div class="flex justify-between items-center border-b border-gray-200 pb-4">
             <div>
               <h3 class="font-bold text-gray-900 text-lg">Fecho Fiscal Consolidado — Período: ${data.period}</h3>
               <p class="text-xs text-gray-500">Nenova Tech — Sistema Certificado AGT</p>
             </div>
-            <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
+            <button onclick="printFiscalReport()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
               <i data-lucide="printer" class="w-4 h-4"></i>
               <span>Imprimir Relatório Oficial</span>
             </button>
@@ -1472,11 +1480,11 @@
             </div>
             <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
               <p class="text-xs text-gray-500 font-medium">Receita Bruta Total</p>
-              <h4 class="text-2xl font-bold text-farmGreen-700 mt-1">${(data.totalRevenue || 0).toLocaleString()} Kz</h4>
+              <h4 class="text-2xl font-bold text-farmGreen-700 mt-1">${(data.totalRevenue || 0).toLocaleString('pt-AO')} Kz</h4>
             </div>
             <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
               <p class="text-xs text-gray-500 font-medium">Total de IVA Recolhido (14%)</p>
-              <h4 class="text-2xl font-bold text-blue-600 mt-1">${(data.totalTaxCollected || 0).toLocaleString()} Kz</h4>
+              <h4 class="text-2xl font-bold text-blue-600 mt-1">${(data.totalTaxCollected || 0).toLocaleString('pt-AO')} Kz</h4>
             </div>
           </div>
 
@@ -1522,9 +1530,7 @@
       }
     }
 
-    // 2. Função para construir e atualizar os gráficos dinamicamente
     function renderCharts(products, sales) {
-      // --- GRÁFICO 1: EVOLUÇÃO DE VENDAS (Baseado nas faturas emitidas) ---
       const salesByDate = {};
       sales.forEach(s => {
         const dateKey = new Date(s.createdAt).toLocaleDateString('pt-AO', { day: '2-digit', month: '2-digit' });
@@ -1534,7 +1540,6 @@
       let salesLabels = Object.keys(salesByDate);
       let salesDataValues = Object.values(salesByDate);
 
-      // Se ainda não houver vendas registadas, mostra uma indicação limpa
       if (salesLabels.length === 0) {
         salesLabels = ['Sem Vendas Registadas'];
         salesDataValues = [0];
@@ -1561,9 +1566,7 @@
         options: { 
           responsive: true, 
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
             x: { grid: { display: false } }
@@ -1571,7 +1574,6 @@
         }
       });
 
-      // --- GRÁFICO 2: DISTRIBUIÇÃO DE STOCK POR CATEGORIA (Todas as categorias reais) ---
       const categoryStockMap = {};
       products.forEach(p => {
         const catName = p.category ? p.category.name : 'Geral / Outros';
@@ -1585,7 +1587,6 @@
       const ctxStock = document.getElementById('stockChart').getContext('2d');
       if (stockChartInstance) stockChartInstance.destroy();
 
-      // Paleta de cores moderna para abranger múltiplas categorias
       const bgColors = ['#16a34a', '#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#15803d', '#166534', '#059669', '#34d399', '#6ee7b7'];
 
       stockChartInstance = new Chart(ctxStock, {
@@ -1618,7 +1619,6 @@
 
     let currentSaleDataForReturn = null;
 
-    // 1. Pesquisar a venda pelo número legível da fatura
     async function searchSaleByInvoice() {
       const invoiceNumber = document.getElementById('return-invoice-number').value.trim();
       if (!invoiceNumber) {
@@ -1636,8 +1636,7 @@
 
         currentSaleDataForReturn = sale;
         
-        // Exibir informações básicas da venda encontrada
-        document.getElementById('return-sale-info').textContent = `Fatura: ${sale.invoiceNumber} | Total: ${sale.total.toLocaleString()} Kz`;
+        document.getElementById('return-sale-info').textContent = `Fatura: ${sale.invoiceNumber} | Total: ${sale.total.toLocaleString('pt-AO')} Kz`;
         document.getElementById('return-operator-info').textContent = `Operador: ${sale.user ? sale.user.name : 'N/D'}`;
 
         const select = document.getElementById('return-item-select');
@@ -1648,12 +1647,11 @@
           return;
         }
 
-        // Preencher o select com os produtos reais da fatura
         sale.items.forEach(item => {
           const prodName = item.product ? item.product.name : 'Medicamento';
           select.innerHTML += `
             <option value="${item.id}" data-product-id="${item.productId}">
-              ${prodName} — Qtd Comprada: ${item.quantity} un — Preço Unit.: ${item.unitPrice.toLocaleString()} Kz
+              ${prodName} — Qtd Comprada: ${item.quantity} un — Preço Unit.: ${item.unitPrice.toLocaleString('pt-AO')} Kz
             </option>
           `;
         });
@@ -1673,10 +1671,14 @@
       const saleItemId = saleItemSelect.value;
       const quantity = parseInt(document.getElementById('return-qty').value) || 1;
       
-      // Recolher e formatar o motivo estruturado
-      const reasonCategory = document.getElementById('return-reason-select').value;
+      // Capturar o elemento select do motivo para extrair o texto legível
+      const reasonSelect = document.getElementById('return-reason-select');
+      const selectedOptionText = reasonSelect.options[reasonSelect.selectedIndex].text;
+      
       const reasonObs = document.getElementById('return-reason-obs').value.trim();
-      const reason = reasonObs ? `[${reasonCategory}] ${reasonObs}` : `[${reasonCategory}]`;
+      
+      // Montar a string de motivo legível para a auditoria fiscal
+      const reason = reasonObs ? `${selectedOptionText} - Obs: ${reasonObs}` : selectedOptionText;
 
       if (!saleItemId) {
         showModal('Atenção', 'Selecione um item válido para devolução.', true);
@@ -1706,9 +1708,8 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erro ao processar devolução');
 
-        showModal('Sucesso', 'Troca/Devolução registada com sucesso! O motivo foi catalogado para auditoria e o stock reposto.');
+        showModal('Sucesso', 'Troca/Devolução registada com sucesso! O motivo foi catalogado e o stock reposto.');
         
-        // Limpar campos
         document.getElementById('return-invoice-number').value = '';
         document.getElementById('return-reason-obs').value = '';
         document.getElementById('return-items-container').classList.add('hidden');
@@ -1718,27 +1719,6 @@
       }
     }
 
-
-    // Atualizar a função switchTab para incluir o 'history'
-    const baseSwitchTab = window.switchTab || function(){};
-    window.switchTab = function(tabId) {
-      ['dashboard', 'inventory', 'alerts', 'pos', 'suppliers', 'returns', 'reports', 'history'].forEach(t => {
-        document.getElementById(`tab-${t}`)?.classList.add('hidden');
-        document.getElementById(`nav-${t}`)?.classList.remove('bg-farmGreen-50', 'text-farmGreen-700');
-        document.getElementById(`nav-${t}`)?.classList.add('text-gray-600', 'hover:bg-gray-50');
-      });
-      document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
-      document.getElementById(`nav-${tabId}`)?.classList.add('bg-farmGreen-50', 'text-farmGreen-700');
-      document.getElementById(`nav-${tabId}`)?.classList.remove('text-gray-600', 'hover:bg-gray-50');
-
-      if (tabId === 'dashboard') loadDashboardData();
-      if (tabId === 'inventory') loadInventory();
-      if (tabId === 'alerts') loadExpirationAlerts();
-      if (tabId === 'pos') loadPosProducts();
-      if (tabId === 'history') loadSalesHistory();
-    };
-
-    // Carregar o histórico de vendas para a tabela
     async function loadSalesHistory() {
       try {
         const res = await fetch(`${API_BASE}/sales`, {
@@ -1754,7 +1734,7 @@
         }
 
         sales.forEach(s => {
-          const dateStr = new Date(s.createdAt).toLocaleString();
+          const dateStr = new Date(s.createdAt).toLocaleString('pt-AO');
           const operatorName = s.user ? s.user.name : 'Operador';
           
           tbody.innerHTML += `
@@ -1763,7 +1743,7 @@
               <td class="p-4 text-gray-600 text-xs">${dateStr}</td>
               <td class="p-4 text-gray-800">${operatorName}</td>
               <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">${s.paymentMethod}</span></td>
-              <td class="p-4 font-bold text-gray-900">${s.total.toLocaleString()} Kz</td>
+              <td class="p-4 font-bold text-gray-900">${s.total.toLocaleString('pt-AO')} Kz</td>
               <td class="p-4 text-center space-x-2">
                 <button onclick="selectForReturn('${s.invoiceNumber}')" class="bg-farmGreen-50 hover:bg-farmGreen-100 text-farmGreen-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition" title="Ir para Devoluções com esta Fatura">
                   Reembolsar / Trocar
@@ -1778,15 +1758,12 @@
       }
     }
 
-    // Atalho prático: Clica em "Reembolsar / Trocar" no histórico e vai direto para a aba de trocas com a fatura preenchida!
     function selectForReturn(invoiceNumber) {
       switchTab('returns');
       document.getElementById('return-invoice-number').value = invoiceNumber;
-      searchSaleByInvoice(); // Já pesquisa automaticamente
+      searchSaleByInvoice();
     }
 
-
-    // Abrir modal de cadastro e carregar selects
     async function openProductModal() {
       document.getElementById('product-modal').classList.remove('hidden');
       await loadCategoriesAndSuppliers();
@@ -1797,7 +1774,6 @@
       document.getElementById('product-modal').classList.add('hidden');
     }
 
-    // Buscar categorias e fornecedores da API e preencher os <select>
     async function loadCategoriesAndSuppliers() {
       try {
         const [resCat, resSup] = await Promise.all([
@@ -1826,11 +1802,8 @@
       }
     }
 
-    // ==========================================
-  // 2. CADASTRO DE PRODUTO E LOTE COM TOAST
-  // ==========================================
-  async function submitNewProduct(event) {
-    event.preventDefault();
+    async function submitNewProduct(event) {
+      event.preventDefault();
       
       const rawCode = document.getElementById('prod-code').value.trim();
       const qtyInput = document.getElementById('prod-qty')?.value;
@@ -1847,7 +1820,6 @@
         taxRate: parseFloat(document.getElementById('prod-tax').value),
         origin: document.getElementById('prod-origin').value,
         minStock: parseInt(document.getElementById('prod-minstock').value),
-        // Envia também a quantidade para o backend processar o lote/stock de uma só vez
         initialStock: qtyInput ? parseInt(qtyInput) : undefined,
         batchNumber: batchInput || undefined,
         expirationDate: expiryInput ? new Date(expiryInput + 'T00:00:00.000Z').toISOString() : undefined
@@ -1894,9 +1866,8 @@
       } finally {
         editingProductId = null;
       }
-  }
+    }
 
-    // 1. Função centralizada para aplicar restrições visuais baseadas no papel do utilizador
     function applyUserPermissions() {
       try {
         if (!authToken) return;
@@ -1916,10 +1887,7 @@
       }
     }
 
-  // ==========================================
-  // 3. GESTÃO DE REMOÇÃO DE PRODUTO COM MODAL
-  // ==========================================
-  function deleteProduct(productId) {
+    function deleteProduct(productId) {
       productToDeleteId = productId;
       
       let modalEl = document.getElementById('custom-confirm-modal');
@@ -1958,7 +1926,7 @@
       productToDeleteId = null;
     }
 
-  async function confirmDeleteProduct() {
+    async function confirmDeleteProduct() {
       if (!productToDeleteId) return;
       const productId = productToDeleteId;
       closeConfirmModal();
@@ -1986,27 +1954,22 @@
       }
     }
 
-    // Torna a função global para o HTML conseguir aceder ao clicar no botão
     window.openEditProductModal = async function(productId) {
       editingProductId = productId;
       
-      // 1. Abre o modal
       const modal = document.getElementById('product-modal');
       if (modal) modal.classList.remove('hidden');
 
-      // 2. Carrega obrigatoriamente as categorias e fornecedores para popular os <select>
       if (typeof loadCategoriesAndSuppliers === 'function') {
         await loadCategoriesAndSuppliers();
       }
 
-      // 3. Procura o produto na cache global do inventário
       const product = allProductsCache.find(p => p.id === productId);
       if (!product) {
         showToast('Produto não encontrado na cache do inventário.', 'error');
         return;
       }
 
-      // 4. Preenche todos os campos cadastrais principais
       document.getElementById('prod-name').value = product.name || '';
       document.getElementById('prod-code').value = product.code || '';
       document.getElementById('prod-category').value = product.categoryId || '';
@@ -2017,7 +1980,6 @@
       document.getElementById('prod-origin').value = product.origin || 'Importado';
       document.getElementById('prod-minstock').value = product.minStock || 10;
 
-      // 5. Preenche ou exibe os dados do lote ativo/inicial (se o produto tiver lotes)
       const activeBatch = product.batches && product.batches.length > 0 ? product.batches[0] : null;
       
       const batchInput = document.getElementById('prod-batch');
@@ -2028,7 +1990,6 @@
         if (batchInput) batchInput.value = activeBatch.batchNumber || '';
         if (qtyInput) qtyInput.value = activeBatch.quantity || 0;
         if (expiryInput && activeBatch.expirationDate) {
-          // Converte a data para o formato yyyy-mm-dd exigido pelo input type="date"
           const dateOnly = new Date(activeBatch.expirationDate).toISOString().split('T')[0];
           expiryInput.value = dateOnly;
         }
@@ -2038,19 +1999,14 @@
         if (expiryInput) expiryInput.value = '';
       }
 
-      // Garante que a secção do lote fica visível para permitir ajustar a quantidade se necessário
       const batchContainer = document.getElementById('initial-batch-container');
       if (batchContainer) batchContainer.classList.remove('hidden');
 
-      // Altera o título do modal para refletir que estamos a editar
       const modalHeaderTitle = document.querySelector('#product-modal h3 span:last-child');
       if (modalHeaderTitle) modalHeaderTitle.textContent = 'Editar Produto e Stock';
     };
 
-    // ==========================================
-  // 4. SISTEMA AUXILIAR DE TOAST NOTIFICATIONS
-  // ==========================================
-  function showToast(message, type = 'success') {
+    function showToast(message, type = 'success') {
       const toast = document.createElement('div');
       toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl text-sm font-semibold shadow-lg text-white transition-all transform translate-y-2 animate-in fade-in slide-in-from-bottom-5 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
       toast.textContent = message;

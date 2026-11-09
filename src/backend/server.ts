@@ -20,7 +20,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// Rota de estado do sistema e validação da licença
+// Rota de estado do sistema e validação da licença (Segura com try/catch)
 app.get('/api/health', async (_req, res) => {
   try {
     const licenseStatus = await LicenseService.getStatus()
@@ -34,18 +34,7 @@ app.get('/api/health', async (_req, res) => {
   }
 })
 
-// Rota pública/direta para ativação de licença via chave (caso necessário no healthcheck)
-app.post('/api/license/activate-direct', async (req, res) => {
-  try {
-    const { key } = req.body
-    const result = await LicenseService.activateWithKey(key)
-    return res.json(result)
-  } catch (error: any) {
-    return res.status(400).json({ error: error.message || 'Falha ao ativar licença' })
-  }
-})
-
-// Rotas do sistema
+// Rotas principais do sistema (Protegidas por autenticação, sem crash de licença)
 app.use('/api/license', licenseRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/sales', saleRoutes)
@@ -53,6 +42,8 @@ app.use('/api/suppliers', supplierRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/categories', categoryRoutes)
+
+// Middleware global de tratamento de erros
 app.use(errorMiddleware)
 
 app.use(express.static(path.resolve(__dirname, '../../public')))

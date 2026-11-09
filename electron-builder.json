@@ -1,29 +1,26 @@
 {
-  "$schema": "https://json.schemastore.org/electron-builder.json",
-  "appId": "com.nenovatech.pharmacy",
-  "productName": "Nenova Tech - Gestão de Farmácia",
+  "appId": "com.nenovatech.medloteos",
+  "productName": "MedLoteOS",
   "directories": {
     "output": "release"
   },
   "files": [
     "dist/**/*",
-    "prisma/dev.db",
-    "node_modules/**/*",
-    "package.json"
+    "public/**/*",
+    "package.json",
+    "node_modules/@prisma/client/**/*",
+    "node_modules/.prisma/client/**/*"
   ],
-  "win": {
-    "target": "nsis",
-    "icon": "assets/icon.ico"
-  },
-  "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "createDesktopShortcut": true,
-    "createStartMenuShortcut": true,
-    "shortcutName": "Nenova Tech Farmácia"
-  },
+  "asarUnpack": [
+    "**/node_modules/@prisma/client/**/*",
+    "**/node_modules/.prisma/client/**/*"
+  ],
   "linux": {
-    "target": ["AppImage", "deb"],
+    "target": ["deb"],
+    "maintainer": "Nenova Tech <vuvu@nenovatech.ao>",
     "category": "Office"
+  },
+  "win": {
+    "target": ["nsis"]
   }
 }

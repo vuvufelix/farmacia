@@ -12,9 +12,10 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
     "build": "npm run compile && electron-builder",
-    "main": "main.js",
+    "main": "dist/main/index.js",
     "compile": "tsc",
-    "start": "electron ."
+    "start": "electron .",
+    "author": { "name": "Nenova Tech", "email": "nenovatech98@gmail.com" }
   },
   "keywords": [
     "electron",

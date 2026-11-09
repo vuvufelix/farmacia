@@ -37,6 +37,15 @@ async function main() {
     }
   })
 
+  await prisma.user.create({
+    data: {
+      name: 'Contabilista',
+      username: 'contabilista',
+      password: passwordHash,
+      role: 'ACCOUNTANT'
+    }
+  })
+
   const shalina = await prisma.supplier.create({
     data: {
       name: 'Shalina Healthcare',

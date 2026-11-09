@@ -379,7 +379,7 @@
           </div>
         </section>
 
-        <!-- ================= MODAL DE IMPRESSÃO DA FATURA (TALÃO AGT 80mm) ================= -->
+        <!-- ================= MODAL DE IMPRESSÃO DO TALÃO INTERNO ================= -->
         <div id="invoice-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 border border-gray-100 flex flex-col items-center font-sans">
             
@@ -389,7 +389,12 @@
                 </div>
                 <h2 class="font-bold text-gray-900 text-sm tracking-wide">FARMÁCIA NENOVA TECH</h2>
                 <p class="text-[11px] text-gray-500">NIF: 5412345678 | Luanda - Angola</p>
-                <p class="text-xs font-bold text-farmGreen-700 mt-1 uppercase" id="inv-modal-number">FR FMN2026/0000</p>
+                
+                <div class="bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] uppercase px-2 py-1 rounded my-1">
+                  NOTA DE VENDA / ORÇAMENTO INTERNO
+                </div>
+
+                <p class="text-xs font-bold text-gray-800 mt-1 uppercase" id="inv-modal-number">NV FMN2026/0000</p>
                 <p class="text-[10px] text-gray-400" id="inv-modal-date">08/11/2026 00:00</p>
             </div>
 
@@ -402,11 +407,11 @@
                   <span id="inv-modal-subtotal" class="font-medium text-gray-800">0 Kz</span>
                 </div>
                 <div class="flex justify-between items-center text-gray-600">
-                  <span>IVA (14%):</span>
+                  <span>Incidência IVA:</span>
                   <span id="inv-modal-tax" class="font-medium text-gray-800">0 Kz</span>
                 </div>
                 <div class="flex justify-between items-center font-bold text-gray-900 text-sm pt-1 border-t border-gray-100">
-                  <span>Total Pago:</span>
+                  <span>Total Valor:</span>
                   <span id="inv-modal-total" class="text-farmGreen-700">0 Kz</span>
                 </div>
                 <div class="flex justify-between items-center text-[11px] text-gray-500 pt-1">
@@ -415,13 +420,12 @@
                 </div>
             </div>
 
-            <div class="text-center space-y-1.5 w-full">
-                <div class="bg-gray-50 p-2 rounded-lg font-mono text-[9px] text-gray-600 border border-gray-100 break-all" id="inv-modal-hash">
-                Hash: XXXX-XXXX-XXXX-XXXX
+            <div class="text-center space-y-2 w-full">
+                <div class="bg-gray-100 p-2 rounded-lg text-[9px] text-gray-700 font-semibold border border-gray-200">
+                  DOCUMENTO AUXILIAR DE GESTÃO INTERNA<br>NÃO SERVE COMO FATURA FISCAL (SEM VALOR TRIBUTÁRIO)
                 </div>
-                <p class="text-[9px] text-gray-400">Processado por programa certificado nº 000/AGT/2026</p>
                 
-                <div class="flex space-x-2 pt-2">
+                <div class="flex space-x-2 pt-1">
                 <button onclick="printInvoiceTicket()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
                     <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                     <span>Imprimir</span>
@@ -610,9 +614,10 @@
                     <option value="TRANSFER">Transferência Bancária</option>
                   </select>
                 </div>
+                <!-- Altera esta div dentro do grid do PDV -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Documento Fiscal</label>
-                  <input type="text" disabled value="AGT - Fatura Recibo (FR)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm text-gray-500">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Documento</label>
+                  <input type="text" disabled value="Nota de Venda / Orçamento Interno (Não Fiscal)" class="w-full bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-sm text-amber-800 font-semibold">
                 </div>
               </div>
 
@@ -679,9 +684,10 @@
                 </div>
               </div>
 
+              <!-- Altera o botão de submissão do PDV -->
               <button onclick="submitSale()" class="w-full bg-farmGreen-600 hover:bg-farmGreen-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-base">
                 <i data-lucide="printer" class="w-5 h-5"></i>
-                <span>Finalizar Venda (Emitir FR)</span>
+                <span>Emitir Nota de Venda (Dar Baixa)</span>
               </button>
             </div>
           </div>
@@ -796,7 +802,7 @@
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
               <i data-lucide="file-text" class="w-6 h-6 text-farmGreen-600"></i>
-              <span>Relatório Fiscal Mensal (AGT - IVA e Vendas)</span>
+              <span>Relatório de Fecho Interno & Controlo de Vendas</span>
             </h2>
             <div class="flex items-center space-x-3">
               <select id="report-month" class="border border-gray-300 rounded-lg p-2 text-sm bg-white">
@@ -814,7 +820,7 @@
           </div>
 
           <div id="report-result-container" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-            <p class="text-sm text-gray-500 text-center py-12">Selecione o período e clique em "Gerar Relatório" para visualizar o fecho fiscal consolidado e detalhado.</p>
+            <p class="text-sm text-gray-500 text-center py-12">Selecione o período e clique em "Gerar Relatório" para visualizar o fecho consolidado de notas de venda e auditoria interna.</p>
           </div>
         </section>
 
@@ -1332,13 +1338,12 @@
     }
 
     function openInvoiceModal(saleData) {
-      document.getElementById('inv-modal-number').textContent = saleData.invoiceNumber || 'FR FMN2026/0000';
+      document.getElementById('inv-modal-number').textContent = saleData.invoiceNumber || 'NV FMN2026/0000';
       document.getElementById('inv-modal-date').textContent = new Date(saleData.createdAt || Date.now()).toLocaleString('pt-AO');
       document.getElementById('inv-modal-subtotal').textContent = (saleData.subtotal || 0).toLocaleString('pt-AO') + ' Kz';
       document.getElementById('inv-modal-tax').textContent = (saleData.taxTotal || 0).toLocaleString('pt-AO') + ' Kz';
       document.getElementById('inv-modal-total').textContent = (saleData.total || 0).toLocaleString('pt-AO') + ' Kz';
       document.getElementById('inv-modal-method').textContent = saleData.paymentMethod || 'MULTICAIXA';
-      document.getElementById('inv-modal-hash').textContent = `Hash AGT: ${saleData.hash || 'N/A'}`;
 
       const itemsContainer = document.getElementById('inv-modal-items');
       itemsContainer.innerHTML = '';
@@ -1523,12 +1528,12 @@
         container.innerHTML = `
           <div class="flex justify-between items-center border-b border-gray-200 pb-4">
             <div>
-              <h3 class="font-bold text-gray-900 text-lg">Fecho Fiscal Consolidado — Período: ${data.period}</h3>
-              <p class="text-xs text-gray-500">Nenova Tech — Sistema Certificado AGT</p>
+              <h3 class="font-bold text-gray-900 text-lg">Fecho Consolidado de Notas de Venda — Período: ${data.period}</h3>
+              <p class="text-xs text-gray-500">Nenova Tech — Módulo de Controlo Interno (Não Fiscal)</p>
             </div>
             <button onclick="printFiscalReport()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
               <i data-lucide="printer" class="w-4 h-4"></i>
-              <span>Imprimir Relatório Oficial</span>
+              <span>Imprimir Relatório de Gestão</span>
             </button>
           </div>
 
@@ -1780,6 +1785,15 @@
 
     async function loadSalesHistory() {
       try {
+        let userRole = '';
+        if (authToken) {
+          try {
+            const payloadBase64 = authToken.split('.')[1];
+            const decodedPayload = JSON.parse(atob(payloadBase64));
+            userRole = (decodedPayload.role || '').toUpperCase();
+          } catch (e) {}
+        }
+
         const res = await fetch(`${API_BASE}/sales`, {
           headers: { 'Authorization': `Bearer ${authToken}` }
         });
@@ -1803,10 +1817,14 @@
               <td class="p-4 text-gray-800">${operatorName}</td>
               <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">${s.paymentMethod}</span></td>
               <td class="p-4 font-bold text-gray-900">${s.total.toLocaleString('pt-AO')} Kz</td>
-              <td class="p-4 text-center space-x-2">
-                <button onclick="selectForReturn('${s.invoiceNumber}')" class="bg-farmGreen-50 hover:bg-farmGreen-100 text-farmGreen-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition" title="Ir para Devoluções com esta Fatura">
-                  Reembolsar / Trocar
-                </button>
+              <td class="p-4 text-center">
+                ${userRole !== 'ACCOUNTANT' ? `
+                  <button onclick="selectForReturn('${s.invoiceNumber}')" class="bg-farmGreen-50 hover:bg-farmGreen-100 text-farmGreen-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition" title="Ir para Devoluções com esta Fatura">
+                    Reembolsar / Trocar
+                  </button>
+                ` : `
+                  <span class="text-xs text-gray-400 italic">Apenas Consulta</span>
+                `}
               </td>
             </tr>
           `;
@@ -1932,7 +1950,28 @@
         if (!authToken) return;
         const payloadBase64 = authToken.split('.')[1];
         const decodedPayload = JSON.parse(atob(payloadBase64));
-        
+        const userRole = (decodedPayload.role || '').toUpperCase();
+
+        // Elementos do menu lateral para ocultar do Contabilista
+        const navInventory = document.getElementById('nav-inventory');
+        const navPos = document.getElementById('nav-pos');
+        const navSuppliers = document.getElementById('nav-suppliers');
+        const navReturns = document.getElementById('nav-returns');
+
+        if (userRole === 'ACCOUNTANT') {
+          if (navInventory) navInventory.style.display = 'none';
+          if (navPos) navPos.style.display = 'none';
+          if (navSuppliers) navSuppliers.style.display = 'none';
+          if (navReturns) navReturns.style.display = 'none';
+
+          // Se o contabilista estiver numa aba proibida, redireciona para o dashboard
+          const activeTab = document.querySelector('section:not(.hidden)')?.id;
+          if (['tab-inventory', 'tab-pos', 'tab-suppliers', 'tab-returns'].includes(activeTab)) {
+            switchTab('dashboard');
+          }
+        }
+
+        // Permissão do botão de novo produto para ADMIN
         const btnNovoProduto = document.querySelector('button[onclick="openProductModal()"]');
         if (btnNovoProduto) {
           if (decodedPayload.role !== 'ADMIN') {

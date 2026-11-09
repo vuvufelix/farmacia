@@ -7,7 +7,7 @@ const reportRoutes = Router()
 
 reportRoutes.use(checkActiveLicense)
 reportRoutes.use(ensureAuthenticated)
-reportRoutes.use(ensureRole(['ADMIN', 'GERENTE', 'CONTABILISTA']))
+reportRoutes.use(ensureRole(['ADMIN', 'CAIXA', 'ACCOUNTANT']))
 
 reportRoutes.get('/monthly', ReportController.getMonthlyReport)
 

@@ -192,6 +192,7 @@ model Return {
 model License {
   id           String   @id @default(uuid())
   pharmacyName String
+  nif          String    @default("5412345678") // NIF oficial desta farmácia local
   licenseKey   String   // Token criptografado
   startDate    DateTime
   expiresAt    DateTime // Data Limite da Subscrição

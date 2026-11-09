@@ -45,24 +45,36 @@ export class LicenseService {
   static async activateWithKey(activationKey: string) {
     const cleanKey = activationKey.trim().toUpperCase();
 
-    const match = cleanKey.match(/^NV-(1|3|6|12)-([A-F0-9]{8})$/);
+    // 1. Extrair os dados da chave: Meses, NIF da chave e o Hash
+    const match = cleanKey.match(/^NV-(1|3|6|12)-([A-Z0-9]+)-([A-F0-9]{8})$/);
     if (!match) {
       throw new Error('Chave de ativação inválida ou mal formatada. Contacte a Nenova Tech.');
     }
 
     const months = parseInt(match[1], 10);
-    const hashProvided = match[2];
+    const clientNif = match[2];
+    const hashProvided = match[3];
 
-    // Validação com o segredo fixo MASTER_SECRET
+    // 2. Buscar o registo da licença atual na base de dados local da farmácia
+    let license = await prisma.license.findFirst();
+    
+    // Se já existir um NIF configurado nesta farmácia, BLOQUEAR se a chave for para outro NIF!
+    if (license && license.nif) {
+      if (license.nif !== clientNif) {
+        throw new Error(`Erro de Segurança: Esta chave foi emitida para o NIF ${clientNif}, mas o NIF registado nesta farmácia é ${license.nif}!`);
+      }
+    }
+
+    // 3. Validar o hash criptográfico com o segredo mestre
     const expectedHash = crypto
       .createHmac('sha256', MASTER_SECRET)
-      .update(`PLAN-${months}-MONTHS`)
+      .update(`PLAN-${months}-MONTHS-${clientNif}`)
       .digest('hex')
       .substring(0, 8)
       .toUpperCase();
 
     if (hashProvided !== expectedHash) {
-      throw new Error('Chave de ativação incorreta ou alterada. Solicite uma nova chave à Nenova Tech.');
+      throw new Error('Chave de ativação incorreta ou alterada.');
     }
 
     const status = await this.getStatus();
@@ -72,12 +84,12 @@ export class LicenseService {
     const newExpiration = new Date(baseDate);
     newExpiration.setMonth(newExpiration.getMonth() + months);
 
-    let license = await prisma.license.findFirst();
-
+    // 4. Guardar ou atualizar na base de dados local
     if (license) {
       license = await prisma.license.update({
         where: { id: license.id },
         data: {
+          nif: clientNif, // Garante que o NIF fica travado aqui
           licenseKey: cleanKey,
           isActive: true,
           expiresAt: newExpiration,
@@ -87,7 +99,8 @@ export class LicenseService {
     } else {
       license = await prisma.license.create({
         data: {
-          pharmacyName: 'Farmácia Nenova Tech',
+          pharmacyName: `Farmácia (NIF: ${clientNif})`,
+          nif: clientNif,
           licenseKey: cleanKey,
           startDate: now,
           isActive: true,
@@ -97,7 +110,7 @@ export class LicenseService {
     }
 
     return {
-      message: `Licença renovada com sucesso por ${months} mês(es)!`,
+      message: `Licença ativada com sucesso para o NIF ${clientNif} por ${months} mês(es)!`,
       expiresAt: license.expiresAt,
       isActive: true,
     };

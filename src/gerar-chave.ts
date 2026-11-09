@@ -1,15 +1,10 @@
-import crypto from 'crypto';
-import dotenv from 'dotenv';
+import crypto from 'node:crypto';
 
-// Carrega variáveis de ambiente se houver um ficheiro .env
-dotenv.config();
-
-// IMPORTANTE: O nome do segredo deve ser exatamente igual ao do license.service.ts
-const NENOVA_LICENSE_SECRET = process.env.LICENSE_SECRET || 'NENOVA_SECRET_KEY_LUANDA_2026';
+const MASTER_SECRET = 'NENOVA_SECRET_KEY_LUANDA_2026';
 
 function generateKeyForClient(months: 1 | 3 | 6 | 12): string {
   const hash = crypto
-    .createHmac('sha256', NENOVA_LICENSE_SECRET)
+    .createHmac('sha256', MASTER_SECRET)
     .update(`PLAN-${months}-MONTHS`)
     .digest('hex')
     .substring(0, 8)

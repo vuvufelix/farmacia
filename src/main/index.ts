@@ -1,63 +1,40 @@
-import { app, BrowserWindow, dialog } from 'electron'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { startServer } from '../backend/server.js'
+import { app, BrowserWindow } from 'electron';
+import * as path from 'path';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+let mainWindow: BrowserWindow | null = null;
 
-let mainWindow: BrowserWindow | null = null
-const PORT = 3333
+function createWindow(): void {
+  mainWindow = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    icon: path.join(__dirname, '../../public/gemini-svg.svg'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    },
+    autoHideMenuBar: true,
+    title: 'MedLote OS - Gestão Farmacêutica'
+  });
 
-async function createWindow() {
-  try {
-    // 1. Iniciar o servidor Express localmente
-    await startServer(PORT)
+  mainWindow.loadURL('http://localhost:3333');
 
-    // 2. Criar a janela principal do Electron
-    mainWindow = new BrowserWindow({
-      width: 1280,
-      height: 800,
-      minWidth: 1024,
-      minHeight: 720,
-      title: 'Nenova Tech - Gestão de Farmácia (Offline)',
-      icon: path.join(__dirname, '../../assets/icon.png'),
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        sandbox: true
-      }
-    })
-
-    // Ocultar a barra de menu padrão para aspeto profissional
-    mainWindow.setMenu(null)
-
-    // Carregar o painel localmente
-    const appUrl = process.env.FRONTEND_URL || `http://localhost:${PORT}`
-    await mainWindow.loadURL(appUrl)
-
-    mainWindow.on('closed', () => {
-      mainWindow = null
-    })
-  } catch (error: any) {
-    dialog.showErrorBox(
-      'Erro de Inicialização',
-      `Não foi possível iniciar o servidor local da Nenova Tech.\n\nDetalhes: ${error.message}`
-    )
-    app.quit()
-  }
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
-
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow()
-  }
-})
+});

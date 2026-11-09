@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nenova Tech - Gestão de Farmácia Offline</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <title>MedLote OS - Gestão Farmacêutica Inteligente (Luanda/Angola)</title>
+  <!-- Tailwind CSS Local (100% Offline) -->
+  <link rel="stylesheet" href="./css/tailwind.min.css">
+  <link rel="icon" type="image/x-icon" href="./gemini-svg.svg">
+  <!-- Chart.js Local (100% Offline para os Gráficos) -->
+  <script src="./js/chart.js"></script>
+
+  <!-- Lucide Icons Local (100% Offline para os Ícones) -->
+  <script src="./js/lucide.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -115,6 +117,48 @@
       display: none !important;
     }
   }
+
+  /* Cores da marca (farmGreen) */
+    .bg-farmGreen-50 { background-color: #f0fdf4 !important; }
+    .bg-farmGreen-100 { background-color: #dcfce7 !important; }
+    .bg-farmGreen-600 { background-color: #16a34a !important; }
+    .bg-farmGreen-700 { background-color: #15803d !important; }
+    .bg-farmGreen-900 { background-color: #14532d !important; }
+    
+    .text-farmGreen-600 { color: #16a34a !important; }
+    .text-farmGreen-700 { color: #15803d !important; }
+    .text-farmGreen-800 { color: #166534 !important; }
+    
+    .border-farmGreen-100 { border-color: #dcfce7 !important; }
+    .hover\:bg-farmGreen-600:hover { background-color: #16a34a !important; }
+    .hover\:bg-farmGreen-700:hover { background-color: #15803d !important; }
+
+    /* Cores de Alerta / Stock Baixo (Amber) */
+    .bg-amber-50 { background-color: #fffbeb !important; }
+    .bg-amber-100 { background-color: #fef3c7 !important; }
+    .bg-amber-600 { background-color: #d97706 !important; }
+    .bg-amber-700 { background-color: #b45309 !important; }
+    .text-amber-600 { color: #d97706 !important; }
+    .text-amber-700 { color: #b45309 !important; }
+    .text-amber-800 { color: #92400e !important; }
+    .text-amber-900 { color: #78350f !important; }
+    .border-amber-100 { border-color: #fef3c7 !important; }
+    .border-amber-200 { border-color: #fde68a !important; }
+    .border-amber-300 { border-color: #fcd34d !important; }
+    .hover\:bg-amber-100:hover { background-color: #fef3c7 !important; }
+    .hover\:bg-amber-700:hover { background-color: #b45309 !important; }
+
+    /* Cores de Faturação / Indicadores (Blue) */
+    .bg-blue-50 { background-color: #eff6ff !important; }
+    .text-blue-600 { color: #2563eb !important; }
+
+    /* Fundo Escuro e Efeito Blur dos Modais (Backdrop) */
+    .bg-black\/50 { background-color: rgba(0, 0, 0, 0.5) !important; }
+    .bg-black\/60 { background-color: rgba(0, 0, 0, 0.6) !important; }
+    .backdrop-blur-sm {
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
@@ -128,7 +172,7 @@
         </div>
         <div>
           <h3 id="modal-title" class="text-lg font-bold text-gray-900">Mensagem do Sistema</h3>
-          <p class="text-xs text-gray-500">Nenova Tech - Luanda</p>
+          <p class="text-xs text-gray-500">MedLote OS - Luanda</p>
         </div>
       </div>
       <p id="modal-message" class="text-sm text-gray-600 mb-6 leading-relaxed">Conteúdo da mensagem...</p>
@@ -147,7 +191,7 @@
         <div class="inline-flex items-center justify-center w-16 h-16 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-4 shadow-inner">
           <i data-lucide="cross" class="w-8 h-8"></i>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">Nenova Tech</h1>
+        <h1 class="text-2xl font-bold text-gray-900">MedLote OS</h1>
         <p class="text-sm text-gray-500 mt-1">Sistema de Gestão Farmacêutica Offline (Luanda)</p>
       </div>
 
@@ -190,7 +234,7 @@
           <i data-lucide="activity" class="w-5 h-5"></i>
         </div>
         <div>
-          <span class="font-bold text-base text-gray-900 block leading-tight">Nenova Tech</span>
+          <span class="font-bold text-base text-gray-900 block leading-tight">MedLote OS</span>
           <span class="text-[10px] bg-farmGreen-100 text-farmGreen-800 px-2 py-0.5 rounded-full font-medium">Offline Mode</span>
         </div>
       </div>
@@ -387,7 +431,7 @@
                 <div class="inline-flex items-center justify-center w-8 h-8 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-1">
                 <i data-lucide="cross" class="w-4 h-4"></i>
                 </div>
-                <h2 class="font-bold text-gray-900 text-sm tracking-wide">FARMÁCIA NENOVA TECH</h2>
+                <h2 class="font-bold text-gray-900 text-sm tracking-wide">FARMÁCIA MedLote OS</h2>
                 <p class="text-[11px] text-gray-500">NIF: 5412345678 | Luanda - Angola</p>
                 
                 <div class="bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] uppercase px-2 py-1 rounded my-1">
@@ -438,7 +482,7 @@
             </div>
         </div>
 
-        <!-- ================= MODAL DE ATIVAÇÃO DE LICENÇA (NENOVA TECH) ================= -->
+        <!-- ================= MODAL DE ATIVAÇÃO DE LICENÇA (MedLote OS) ================= -->
         <div id="license-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
           <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100">
             <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
@@ -475,7 +519,7 @@
                 <li><strong>6 Meses:</strong> 60.000 Kz</li>
                 <li><strong>1 Ano (12 Meses):</strong> 120.000 Kz</li>
               </ul>
-              <p class="pt-1 text-gray-400">Após realizar o pagamento, solicite a sua chave de ativação ao suporte técnico da <strong>Nenova Tech</strong>.</p>
+              <p class="pt-1 text-gray-400">Após realizar o pagamento, solicite a sua chave de ativação ao suporte técnico da <strong>MedLote OS</strong>.</p>
             </div>
 
             <form id="license-activation-form" onsubmit="submitLicenseKey(event)" class="space-y-4 text-xs">
@@ -1529,7 +1573,7 @@
           <div class="flex justify-between items-center border-b border-gray-200 pb-4">
             <div>
               <h3 class="font-bold text-gray-900 text-lg">Fecho Consolidado de Notas de Venda — Período: ${data.period}</h3>
-              <p class="text-xs text-gray-500">Nenova Tech — Módulo de Controlo Interno (Não Fiscal)</p>
+              <p class="text-xs text-gray-500">MedLote OS — Módulo de Controlo Interno (Não Fiscal)</p>
             </div>
             <button onclick="printFiscalReport()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
               <i data-lucide="printer" class="w-4 h-4"></i>

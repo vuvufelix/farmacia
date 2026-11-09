@@ -11,7 +11,10 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
-    "build:electron": "npm run build:backend && electron-builder"
+    "build": "npm run compile && electron-builder",
+    "main": "main.js",
+    "compile": "tsc",
+    "start": "electron ."
   },
   "keywords": [
     "electron",

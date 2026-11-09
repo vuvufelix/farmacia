@@ -19,7 +19,7 @@ export class SaleService {
     paymentMethod: 'MONEY' | 'MULTICAIXA' | 'TRANSFER' | 'COMBINED'
     items: Array<{ productId: string; batchId: string; quantity: number }>
   }) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       let subtotal = 0
       let taxTotal = 0
       const processedItems = []
@@ -134,7 +134,7 @@ export class SaleService {
     quantity: number
     reason: string
   }) {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const saleItem = await tx.saleItem.findUnique({
         where: { id: data.saleItemId },
         include: { product: true, batch: true }

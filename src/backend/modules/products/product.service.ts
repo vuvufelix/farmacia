@@ -4,7 +4,7 @@ export class ProductService {
   static async createProduct(data: any) {
     const { initialStock, batchNumber, expirationDate, ...productData } = data;
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const product = await tx.product.create({
         data: productData,
         include: {
@@ -136,7 +136,7 @@ export class ProductService {
     }
 
     // 3. Caso nunca tenha sido vendido, removemos os lotes e o produto em transação
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       await tx.batch.deleteMany({
         where: { productId: id }
       });
@@ -151,7 +151,7 @@ export class ProductService {
     const { initialStock, quantity, batchNumber, expirationDate, ...productData } = data;
     const stockValue = initialStock ?? quantity;
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       // 1. Atualiza os dados principais do produto
       const updatedProduct = await tx.product.update({
         where: { id },

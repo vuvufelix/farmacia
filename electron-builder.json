@@ -1,26 +1,19 @@
 {
-  "appId": "com.nenovatech.medloteos",
+  "appId": "com.nenovatech.nenovapharmacy",
   "productName": "MedLoteOS",
   "directories": {
     "output": "release"
   },
+  "asar": false,
   "files": [
     "dist/**/*",
     "public/**/*",
     "package.json",
-    "node_modules/@prisma/client/**/*",
-    "node_modules/.prisma/client/**/*"
-  ],
-  "asarUnpack": [
-    "**/node_modules/@prisma/client/**/*",
-    "**/node_modules/.prisma/client/**/*"
+    "node_modules/**/*"
   ],
   "linux": {
     "target": ["deb"],
     "maintainer": "Nenova Tech <vuvu@nenovatech.ao>",
     "category": "Office"
-  },
-  "win": {
-    "target": ["nsis"]
   }
 }

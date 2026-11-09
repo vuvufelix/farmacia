@@ -39,3 +39,6 @@ Thumbs.db
 *.AppImage
 *.deb
 *.dmg
+
+# Ignorar o cliente Prisma gerado localmente
+src/generated/

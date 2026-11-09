@@ -26,7 +26,7 @@ export class SupplierService {
     const lowStockItems = []
 
     for (const product of products) {
-      const currentStock = product.batches.reduce((acc, b) => acc + b.quantity, 0)
+      const currentStock = product.batches.reduce((acc: number, b: any) => acc + b.quantity, 0)
       if (currentStock <= product.minStock) {
         const suggestedQuantity = (product.minStock * 2) - currentStock
         lowStockItems.push({

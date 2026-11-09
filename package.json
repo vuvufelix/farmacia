@@ -11,7 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
-    "build": "npm run compile && electron-builder",
+"build": "npx prisma generate && mkdir -p node_modules/.prisma && cp -R node_modules/@prisma/client/.prisma/* node_modules/.prisma/ 2>/dev/null || true && npm run compile && electron-builder",
     "main": "dist/main/index.js",
     "compile": "tsc",
     "start": "electron .",

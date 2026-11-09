@@ -1,54 +1,53 @@
-import crypto from 'crypto'
-import { prisma } from '../../database/prisma.client.js'
+import db from '../../database/db.js';
+import crypto from 'crypto';
 
 export class SaleService {
-  private static async generateInvoiceNumber(): Promise<string> {
-    const year = new Date().getFullYear()
-    const count = await prisma.sale.count()
-    const sequence = String(count + 1).padStart(4, '0')
-    return `FR FMN${year}/${sequence}`
+  private static generateInvoiceNumber(): string {
+    const year = new Date().getFullYear();
+    const res: any = db.prepare('SELECT COUNT(*) as count FROM Sale').get();
+    const sequence = String(res.count + 1).padStart(4, '0');
+    return `FR FMN${year}/${sequence}`;
   }
 
   private static generateSaleHash(invoiceNumber: string, total: number, createdAt: Date): string {
-    const rawData = `${invoiceNumber};${total.toFixed(2)};${createdAt.toISOString()}`
-    return crypto.createHash('sha256').update(rawData).digest('hex').substring(0, 16).toUpperCase()
+    const rawData = `${invoiceNumber};${total.toFixed(2)};${createdAt.toISOString()}`;
+    return crypto.createHash('sha256').update(rawData).digest('hex').substring(0, 16).toUpperCase();
   }
 
   static async createSale(data: {
-    userId: string
-    paymentMethod: 'MONEY' | 'MULTICAIXA' | 'TRANSFER' | 'COMBINED'
-    items: Array<{ productId: string; batchId: string; quantity: number }>
+    userId: string;
+    paymentMethod: 'MONEY' | 'MULTICAIXA' | 'TRANSFER' | 'COMBINED';
+    items: Array<{ productId: string; batchId: string; quantity: number }>;
   }) {
-    return prisma.$transaction(async (tx: any) => {
-      let subtotal = 0
-      let taxTotal = 0
-      const processedItems = []
+    const saleId = crypto.randomUUID();
+    let subtotal = 0;
+    let taxTotal = 0;
+    const processedItems: any[] = [];
 
+    const saleTx = db.transaction(() => {
       for (const item of data.items) {
-        const product = await tx.product.findUnique({ where: { id: item.productId } })
-        if (!product) throw new Error(`Produto não encontrado (ID: ${item.productId})`)
+        const product: any = db.prepare('SELECT * FROM Product WHERE id = ?').get(item.productId);
+        if (!product) throw new Error(`Produto não encontrado (ID: ${item.productId})`);
 
-        const batch = await tx.batch.findUnique({ where: { id: item.batchId } })
-        if (!batch) throw new Error(`Lote não encontrado (ID: ${item.batchId})`)
+        const batch: any = db.prepare('SELECT * FROM Batch WHERE id = ?').get(item.batchId);
+        if (!batch) throw new Error(`Lote não encontrado (ID: ${item.batchId})`);
 
         if (batch.quantity < item.quantity) {
-          throw new Error(`Estoque insuficiente no lote ${batch.batchNumber}. Disponível: ${batch.quantity}`)
+          throw new Error(`Estoque insuficiente no lote ${batch.batchNumber}. Disponível: ${batch.quantity}`);
         }
 
-        // Baixar a quantidade no lote
-        await tx.batch.update({
-          where: { id: batch.id },
-          data: { quantity: batch.quantity - item.quantity }
-        })
+        db.prepare('UPDATE Batch SET quantity = ? WHERE id = ?').run(batch.quantity - item.quantity, batch.id);
 
-        const itemSubtotal = product.sellingPrice * item.quantity
-        const itemTax = itemSubtotal * product.taxRate
-        const itemTotal = itemSubtotal + itemTax
+        const itemSubtotal = product.sellingPrice * item.quantity;
+        const itemTax = itemSubtotal * product.taxRate;
+        const itemTotal = itemSubtotal + itemTax;
 
-        subtotal += itemSubtotal
-        taxTotal += itemTax
+        subtotal += itemSubtotal;
+        taxTotal += itemTax;
 
         processedItems.push({
+          id: crypto.randomUUID(),
+          saleId,
           productId: product.id,
           batchId: batch.id,
           quantity: item.quantity,
@@ -57,133 +56,135 @@ export class SaleService {
           taxAmount: itemTax,
           subtotal: itemSubtotal,
           total: itemTotal
-        })
+        });
       }
 
-      const total = subtotal + taxTotal
-      const invoiceNumber = await this.generateInvoiceNumber()
-      const now = new Date()
-      const hash = this.generateSaleHash(invoiceNumber, total, now)
-      const qrCodeData = `NENOVA|${invoiceNumber}|${total.toFixed(2)}|${hash}`
+      const total = subtotal + taxTotal;
+      const invoiceNumber = this.generateInvoiceNumber();
+      const now = new Date();
+      const hash = this.generateSaleHash(invoiceNumber, total, now);
+      const qrCodeData = `NENOVA|${invoiceNumber}|${total.toFixed(2)}|${hash}`;
 
-      const sale = await tx.sale.create({
-        data: {
-          invoiceNumber,
-          subtotal,
-          taxTotal,
-          total,
-          paymentMethod: data.paymentMethod,
-          hash,
-          qrCodeData,
-          userId: data.userId,
-          createdAt: now,
-          items: {
-            create: processedItems
-          }
-        },
-        include: {
-          items: {
-            include: { product: true, batch: true }
-          },
-          user: {
-            select: { id: true, name: true, role: true }
-          }
-        }
-      })
+      db.prepare(`
+        INSERT INTO Sale (id, invoiceNumber, subtotal, taxTotal, total, paymentMethod, hash, qrCodeData, userId, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        saleId,
+        invoiceNumber,
+        subtotal,
+        taxTotal,
+        total,
+        data.paymentMethod,
+        hash,
+        qrCodeData,
+        data.userId,
+        now.toISOString()
+      );
 
-      return sale
-    })
-  }
+      const itemStmt = db.prepare(`
+        INSERT INTO SaleItem (id, saleId, productId, batchId, quantity, unitPrice, taxRate, taxAmount, subtotal, total)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
 
-  static async getSaleInvoice(saleId: string) {
-    const sale = await prisma.sale.findUnique({
-      where: { id: saleId },
-      include: {
-        items: {
-          include: { product: true, batch: true }
-        },
-        user: { select: { name: true } }
+      for (const pi of processedItems) {
+        itemStmt.run(
+          pi.id,
+          pi.saleId,
+          pi.productId,
+          pi.batchId,
+          pi.quantity,
+          pi.unitPrice,
+          pi.taxRate,
+          pi.taxAmount,
+          pi.subtotal,
+          pi.total
+        );
       }
-    })
+    });
 
-    if (!sale) throw new Error('Venda não encontrada')
-    return sale
+    saleTx();
+    return this.getSaleInvoice(saleId);
   }
 
-  // 1. Novo método para encontrar a fatura de forma legível pelo número (ex: FR FMN2026/0001)
-  static async getSaleByInvoiceNumber(invoiceNumber: string) {
-    const sale = await prisma.sale.findUnique({
-      where: { invoiceNumber: invoiceNumber.trim().toUpperCase() },
-      include: {
-        items: {
-          include: { product: true, batch: true }
-        },
-        user: { select: { name: true } }
-      }
-    })
+  static getSaleInvoice(saleId: string) {
+    const sale: any = db.prepare('SELECT * FROM Sale WHERE id = ?').get(saleId);
+    if (!sale) throw new Error('Venda não encontrada');
 
-    if (!sale) throw new Error('Fatura não encontrada com este número')
-    return sale
+    const items = db.prepare('SELECT * FROM SaleItem WHERE saleId = ?').all(saleId).map((item: any) => ({
+      ...item,
+      product: db.prepare('SELECT * FROM Product WHERE id = ?').get(item.productId),
+      batch: db.prepare('SELECT * FROM Batch WHERE id = ?').get(item.batchId)
+    }));
+
+    const user = db.prepare('SELECT name, role FROM User WHERE id = ?').get(sale.userId);
+
+    return { ...sale, items, user };
   }
 
-  // 2. Método de devolução otimizado (compatível com o ID do item selecionado na interface amigável)
+  static getSaleByInvoiceNumber(invoiceNumber: string) {
+    const sale: any = db.prepare('SELECT * FROM Sale WHERE invoiceNumber = ?').get(invoiceNumber.trim().toUpperCase());
+    if (!sale) throw new Error('Fatura não encontrada com este número');
+    return this.getSaleInvoice(sale.id);
+  }
+
   static async processReturn(data: {
-    saleId: string
-    saleItemId: string
-    userId: string
-    quantity: number
-    reason: string
+    saleId: string;
+    saleItemId: string;
+    userId: string;
+    quantity: number;
+    reason: string;
   }) {
-    return prisma.$transaction(async (tx: any) => {
-      const saleItem = await tx.saleItem.findUnique({
-        where: { id: data.saleItemId },
-        include: { product: true, batch: true }
-      })
+    let returnRecord: any;
 
+    const returnTx = db.transaction(() => {
+      const saleItem: any = db.prepare('SELECT * FROM SaleItem WHERE id = ?').get(data.saleItemId);
       if (!saleItem || saleItem.saleId !== data.saleId) {
-        throw new Error('Item de venda não encontrado nesta fatura')
+        throw new Error('Item de venda não encontrado nesta fatura');
       }
 
       if (data.quantity > saleItem.quantity) {
-        throw new Error('Quantidade para troca/devolução superior à faturada')
+        throw new Error('Quantidade para troca/devolução superior à faturada');
       }
 
-      // Reverter quantidade de volta ao lote (FEFO / Stock)
-      await tx.batch.update({
-        where: { id: saleItem.batchId },
-        data: { quantity: saleItem.batch.quantity + data.quantity }
-      })
+      const batch: any = db.prepare('SELECT * FROM Batch WHERE id = ?').get(saleItem.batchId);
+      db.prepare('UPDATE Batch SET quantity = ? WHERE id = ?').run(batch.quantity + data.quantity, batch.id);
 
-      const refundAmount = saleItem.unitPrice * data.quantity * (1 + saleItem.taxRate)
+      const refundAmount = saleItem.unitPrice * data.quantity * (1 + saleItem.taxRate);
+      const returnId = crypto.randomUUID();
 
-      const returnRecord = await tx.return.create({
-        data: {
-          saleId: data.saleId,
-          saleItemId: data.saleItemId,
-          userId: data.userId,
-          quantity: data.quantity,
-          reason: data.reason,
-          refundAmount
-        },
-        include: {
-          saleItem: { include: { product: true } }
-        }
-      })
+      db.prepare(`
+        INSERT INTO Return (id, saleId, saleItemId, userId, quantity, reason, refundAmount, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        returnId,
+        data.saleId,
+        data.saleItemId,
+        data.userId,
+        data.quantity,
+        data.reason,
+        refundAmount,
+        new Date().toISOString()
+      );
 
-      return returnRecord
-    })
+      returnRecord = db.prepare('SELECT * FROM Return WHERE id = ?').get(returnId);
+    });
+
+    returnTx();
+
+    const rawSaleItem = db.prepare('SELECT * FROM SaleItem WHERE id = ?').get(data.saleItemId) as any;
+    const rawProduct = rawSaleItem ? db.prepare('SELECT * FROM Product WHERE id = ?').get(rawSaleItem.productId) as any : null;
+
+    return {
+      ...returnRecord,
+      saleItem: {
+        ...rawSaleItem,
+        product: rawProduct
+      }
+    };
   }
 
-  // Listar todas as vendas para o histórico
-  static async listAllSales() {
-    return prisma.sale.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        items: {
-          include: { product: true, batch: true }
-        },
-        user: { select: { name: true, role: true } }
-      }
-    })
+  static listAllSales() {
+    const sales: any[] = db.prepare('SELECT * FROM Sale ORDER BY createdAt DESC').all();
+    return sales.map(s => this.getSaleInvoice(s.id));
   }
 }

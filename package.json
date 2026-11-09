@@ -6,30 +6,28 @@
   "type": "module",
   "scripts": {
     "dev:backend": "tsx watch src/backend/server.ts",
-    "build:backend": "tsc -p tsconfig.json",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "tsx prisma/seed.ts",
-    "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
-    "build": "npx prisma generate && mkdir -p dist/backend/database && cp -R node_modules/.prisma dist/backend/ && npm run compile && electron-builder",
-    "main": "dist/main/index.js",
     "compile": "tsc",
+    "seed": "node --import tsx seed.ts",
+    "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
+    "build": "npm run compile && electron-builder",
     "start": "electron .",
-    "author": { "name": "Nenova Tech", "email": "nenovatech98@gmail.com" }
+    "main": "dist/main/index.js"
   },
   "keywords": [
     "electron",
     "sqlite",
-    "prisma",
     "express",
     "angola",
     "pharmacy"
   ],
-  "author": "Nenova Tech",
+  "author": {
+    "name": "Nenova Tech",
+    "email": "nenovatech98@gmail.com"
+  },
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^5.10.0",
     "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
@@ -38,6 +36,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
@@ -45,8 +44,6 @@
     "concurrently": "^8.2.2",
     "electron": "^29.1.0",
     "electron-builder": "^24.13.3",
-    "prisma": "^5.10.0",
-    "ts-node": "^10.9.2",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3"
   }

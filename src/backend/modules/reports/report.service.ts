@@ -1,54 +1,59 @@
-import { prisma } from '../../database/prisma.client.js'
+import db from '../../database/db.js';
 
 export class ReportService {
   static async getMonthlySalesAndTaxReport(year: number, month: number) {
-    const startDate = new Date(year, month - 1, 1)
-    const endDate = new Date(year, month, 0, 23, 59, 59)
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
 
-    // 1. Buscar vendas do mês
-    const sales = await prisma.sale.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate
-        }
-      },
-      include: {
-        user: { select: { name: true, username: true } },
-        items: { include: { product: true } }
-      }
-    })
+    const sales: any[] = db.prepare(`
+      SELECT * FROM Sale 
+      WHERE createdAt >= ? AND createdAt <= ? 
+      ORDER BY createdAt DESC
+    `).all(startDate, endDate);
 
-    // 2. Buscar devoluções / trocas do mês para auditoria fiscal e motivos
-    const returns = await prisma.return.findMany({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: endDate
-        }
-      },
-      include: {
-        user: { select: { name: true } },
-        saleItem: { include: { product: true } },
-        sale: { select: { invoiceNumber: true } }
-      }
-    })
+    const returns: any[] = db.prepare(`
+      SELECT * FROM Return 
+      WHERE createdAt >= ? AND createdAt <= ?
+    `).all(startDate, endDate);
 
-    let totalRevenue = 0
-    let totalTaxCollected = 0
-    const salesByOperator: Record<string, { count: number; total: number }> = {}
+    let totalRevenue = 0;
+    let totalTaxCollected = 0;
+    const salesByOperator: Record<string, { count: number; total: number }> = {};
 
-    for (const sale of sales) {
-      totalRevenue += sale.total
-      totalTaxCollected += sale.taxTotal
+    const salesFormatted = sales.map(sale => {
+      totalRevenue += sale.total;
+      totalTaxCollected += sale.taxTotal;
 
-      const operatorName = sale.user.name
+      const user: any = db.prepare('SELECT name, username FROM User WHERE id = ?').get(sale.userId);
+      const operatorName = user ? user.name : 'Desconhecido';
+
       if (!salesByOperator[operatorName]) {
-        salesByOperator[operatorName] = { count: 0, total: 0 }
+        salesByOperator[operatorName] = { count: 0, total: 0 };
       }
-      salesByOperator[operatorName].count += 1
-      salesByOperator[operatorName].total += sale.total
-    }
+      salesByOperator[operatorName].count += 1;
+      salesByOperator[operatorName].total += sale.total;
+
+      const items = db.prepare('SELECT * FROM SaleItem WHERE saleId = ?').all(sale.id).map((i: any) => ({
+        ...i,
+        product: db.prepare('SELECT * FROM Product WHERE id = ?').get(i.productId)
+      }));
+
+      return { ...sale, user, items };
+    });
+
+    const returnsFormatted = returns.map(ret => {
+      const user: any = db.prepare('SELECT name FROM User WHERE id = ?').get(ret.userId);
+      const saleItem: any = db.prepare('SELECT * FROM SaleItem WHERE id = ?').get(ret.saleItemId);
+      const product = saleItem ? db.prepare('SELECT * FROM Product WHERE id = ?').get(saleItem.productId) : null;
+      const sale: any = db.prepare('SELECT invoiceNumber FROM Sale WHERE id = ?').get(ret.saleId);
+
+      return {
+        ...ret,
+        user,
+        saleItem: { ...saleItem, product },
+        sale: { invoiceNumber: sale ? sale.invoiceNumber : '' }
+      };
+    });
 
     return {
       period: `${month}/${year}`,
@@ -56,8 +61,8 @@ export class ReportService {
       totalRevenue,
       totalTaxCollected,
       salesByOperator,
-      salesDetails: sales,
-      returnsDetails: returns // <-- Inclui todas as trocas e motivos catalogados para o fecho fiscal
-    }
+      salesDetails: salesFormatted,
+      returnsDetails: returnsFormatted
+    };
   }
 }

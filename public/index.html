@@ -1171,21 +1171,35 @@
       const isAdmin = checkIsAdmin();
 
       products.forEach(p => {
-        const activeBatch = p.batches && p.batches.length > 0 ? p.batches[0] : null;
-        const totalStock = p.batches ? p.batches.reduce((acc, b) => acc + b.quantity, 0) : 0;
-        const isLowStock = totalStock <= (p.minStock || 0);
+        // Proteção segura caso batches venha vazio ou nulo
+        const batches = Array.isArray(p.batches) ? p.batches : [];
+        const activeBatch = batches.length > 0 ? batches[0] : null;
+        const totalStock = batches.reduce((acc, b) => acc + (b.quantity || 0), 0);
+        const minStock = p.minStock || 10;
+        const isLowStock = totalStock <= minStock;
         
         const batchNumber = activeBatch ? activeBatch.batchNumber : 'Sem Stock';
-        const expiryDate = activeBatch ? new Date(activeBatch.expirationDate).toLocaleDateString('pt-AO') : 'N/D';
+        
+        let expiryDate = 'N/D';
+        if (activeBatch && activeBatch.expirationDate) {
+          try {
+            expiryDate = new Date(activeBatch.expirationDate).toLocaleDateString('pt-AO');
+          } catch (e) {
+            expiryDate = activeBatch.expirationDate.split('T')[0];
+          }
+        }
+
+        const categoryName = p.category ? p.category.name : (p.categoryName || 'Geral');
+        const sellingPrice = Number(p.sellingPrice || 0);
 
         tbody.innerHTML += `
           <tr class="hover:bg-gray-50/50 transition text-xs ${totalStock === 0 ? 'bg-red-50/30' : (isLowStock ? 'bg-amber-50/40' : '')}">
             <td class="p-4">
-              <p class="font-bold text-gray-900 text-sm">${p.name}</p>
+              <p class="font-bold text-gray-900 text-sm">${p.name || 'Produto sem nome'}</p>
               <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
             </td>
-            <td class="p-4 text-gray-600">${p.category ? p.category.name : 'N/D'}</td>
-            <td class="p-4 font-bold text-farmGreen-700">${(p.sellingPrice || 0).toLocaleString('pt-AO')} Kz</td>
+            <td class="p-4 text-gray-600">${categoryName}</td>
+            <td class="p-4 font-bold text-farmGreen-700">${sellingPrice.toLocaleString('pt-AO')} Kz</td>
             <td class="p-4 font-mono text-gray-700">${batchNumber}</td>
             <td class="p-4 text-gray-600">${expiryDate}</td>
             <td class="p-4">
@@ -1966,9 +1980,19 @@
     }
 
     async function openProductModal() {
+      // 1. Limpar o formulário e anular o ID de edição
+      editingProductId = null;
+      const form = document.getElementById('product-form');
+      if (form) form.reset();
+
+      // 2. Repor o título original do modal (caso tenha sido alterado para "Editar")
+      const modalHeaderTitle = document.querySelector('#product-modal h3 span:last-child');
+      if (modalHeaderTitle) modalHeaderTitle.textContent = 'Cadastrar Novo Produto';
+
+      // 3. Abrir o modal e carregar os dados auxiliares
       document.getElementById('product-modal').classList.remove('hidden');
       await loadCategoriesAndSuppliers();
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function closeProductModal() {
@@ -2011,9 +2035,13 @@
       const batchInput = document.getElementById('prod-batch')?.value.trim();
       const expiryInput = document.getElementById('prod-expiry')?.value;
 
+      let formattedExpiration = undefined;
+      if (expiryInput) {
+        formattedExpiration = new Date(`${expiryInput}T12:00:00.000Z`).toISOString();
+      }
+
       const productPayload = {
-        name: document.getElementById('prod-name').value,
-        code: rawCode !== "" ? rawCode : undefined,
+        name: document.getElementById('prod-name').value.trim(),
         categoryId: document.getElementById('prod-category').value,
         supplierId: document.getElementById('prod-supplier').value || undefined,
         costPrice: parseFloat(document.getElementById('prod-cost').value),
@@ -2023,8 +2051,13 @@
         minStock: parseInt(document.getElementById('prod-minstock').value),
         initialStock: qtyInput ? parseInt(qtyInput) : undefined,
         batchNumber: batchInput || undefined,
-        expirationDate: expiryInput ? new Date(expiryInput + 'T00:00:00.000Z').toISOString() : undefined
+        expirationDate: formattedExpiration
       };
+
+      // Só envia a chave code se houver texto, evitando conflitos de schema
+      if (rawCode !== "") {
+        productPayload.code = rawCode;
+      }
 
       try {
         if (editingProductId) {
@@ -2202,7 +2235,8 @@
       document.getElementById('prod-origin').value = product.origin || 'Importado';
       document.getElementById('prod-minstock').value = product.minStock || 10;
 
-      const activeBatch = product.batches && product.batches.length > 0 ? product.batches[0] : null;
+      const batches = Array.isArray(product.batches) ? product.batches : [];
+      const activeBatch = batches.length > 0 ? batches[0] : null;
       
       const batchInput = document.getElementById('prod-batch');
       const qtyInput = document.getElementById('prod-qty');
@@ -2211,8 +2245,9 @@
       if (activeBatch) {
         if (batchInput) batchInput.value = activeBatch.batchNumber || '';
         if (qtyInput) qtyInput.value = activeBatch.quantity || 0;
+        
         if (expiryInput && activeBatch.expirationDate) {
-          const dateOnly = new Date(activeBatch.expirationDate).toISOString().split('T')[0];
+          const dateOnly = activeBatch.expirationDate.split('T')[0];
           expiryInput.value = dateOnly;
         }
       } else {

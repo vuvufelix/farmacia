@@ -17,6 +17,10 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 
+// ... depois de criar a instância 'app = express()' e definir os middlewares/cors:
+const publicPath = path.join(__dirname, '../../public'); // ajuste conforme a localização do dist/public
+app.use(express.static(publicPath));
+
 app.use(cors())
 app.use(express.json())
 

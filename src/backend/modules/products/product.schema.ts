@@ -2,8 +2,8 @@ import { z } from 'zod'
 
 export const createProductSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres'),
-  code: z.string().optional(),
-  origin: z.string().optional(),
+  code: z.string().optional().nullable(),
+  origin: z.string().optional().nullable(),
   costPrice: z.number().positive('O preço de custo deve ser positivo'),
   sellingPrice: z.number().positive('O preço de venda deve ser positivo'),
   taxRate: z.number().min(0).default(0.0),

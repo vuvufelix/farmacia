@@ -5,9 +5,10 @@ import { env } from '../../config/environment.js';
 
 export class AuthService {
   static async login(username: string, pass: string) {
-    const user: any = db.prepare('SELECT * FROM User WHERE username = ?').get(username);
+    // Aponta corretamente para a tabela mapeada 'users' no SQLite
+    const user: any = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 
-    if (!user || user.active === 0) {
+    if (!user || Number(user.active) === 0) {
       throw new Error('Utilizador não encontrado ou inativo');
     }
 

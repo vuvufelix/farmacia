@@ -4,24 +4,27 @@ import crypto from 'crypto';
 export class SupplierService {
   static async createSupplier(data: any) {
     const id = crypto.randomUUID();
+    // Tabela mapeada 'suppliers'
     const stmt = db.prepare(`
-      INSERT INTO Supplier (id, name, contact, phone, email, address)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO suppliers (id, name, phone, email, address, nif, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `);
     stmt.run(
       id,
       data.name,
-      data.contact || null,
       data.phone,
       data.email || null,
-      data.address || null
+      data.address || null,
+      data.nif || null
     );
-    return db.prepare('SELECT * FROM Supplier WHERE id = ?').get(id);
+    return db.prepare('SELECT * FROM suppliers WHERE id = ?').get(id);
   }
 
   static async listSuppliers() {
-    const suppliers: any[] = db.prepare('SELECT * FROM Supplier ORDER BY name ASC').all();
-    const countStmt = db.prepare('SELECT COUNT(*) as count FROM Product WHERE supplierId = ?');
+    // Tabela mapeada 'suppliers'
+    const suppliers: any[] = db.prepare('SELECT * FROM suppliers ORDER BY name ASC').all();
+    // Tabela mapeada 'products'
+    const countStmt = db.prepare('SELECT COUNT(*) as count FROM products WHERE supplierId = ?');
 
     return suppliers.map(supplier => {
       const res: any = countStmt.get(supplier.id);
@@ -33,10 +36,12 @@ export class SupplierService {
   }
 
   static async getLowStockProductsBySupplier(supplierId: string) {
-    const products: any[] = db.prepare('SELECT * FROM Product WHERE supplierId = ?').all(supplierId);
+    // Tabela mapeada 'products'
+    const products: any[] = db.prepare('SELECT * FROM products WHERE supplierId = ?').all(supplierId);
     const lowStockItems = [];
 
-    const batchStmt = db.prepare('SELECT * FROM Batch WHERE productId = ? AND quantity > 0');
+    // Tabela mapeada 'batches'
+    const batchStmt = db.prepare('SELECT * FROM batches WHERE productId = ? AND quantity > 0');
 
     for (const product of products) {
       const batches: any[] = batchStmt.all(product.id);
@@ -59,7 +64,8 @@ export class SupplierService {
   }
 
   static async generateWhatsAppOrderMessage(supplierId: string) {
-    const supplier: any = db.prepare('SELECT * FROM Supplier WHERE id = ?').get(supplierId);
+    // Tabela mapeada 'suppliers'
+    const supplier: any = db.prepare('SELECT * FROM suppliers WHERE id = ?').get(supplierId);
     if (!supplier) throw new Error('Fornecedor não encontrado');
 
     const itemsToOrder = await this.getLowStockProductsBySupplier(supplierId);

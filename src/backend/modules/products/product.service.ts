@@ -6,29 +6,33 @@ export class ProductService {
     const { initialStock, batchNumber, expirationDate, ...productData } = data;
     const productId = crypto.randomUUID();
 
+    const safeCode = productData.code && productData.code.trim() !== '' ? productData.code.trim() : null;
+
     const createTx = db.transaction(() => {
+      // Nome da tabela corrigido para 'products'
       const stmtProd = db.prepare(`
-        INSERT INTO Product (id, name, code, description, costPrice, sellingPrice, minStock, taxRate, categoryId, supplierId, isActive)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        INSERT INTO products (id, name, code, origin, costPrice, sellingPrice, minStock, taxRate, categoryId, supplierId, isActive, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `);
       stmtProd.run(
         productId,
         productData.name,
-        productData.code || null,
-        productData.description || null,
+        safeCode,
+        productData.origin || 'Importado',
         productData.costPrice,
         productData.sellingPrice,
-        productData.minStock ?? 5,
+        productData.minStock ?? 10,
         productData.taxRate ?? 0.14,
         productData.categoryId || null,
         productData.supplierId || null
       );
 
-      if (initialStock && Number(initialStock) > 0) {
+      if (initialStock !== undefined && initialStock !== null && Number(initialStock) >= 0) {
         const batchId = crypto.randomUUID();
+        // Nome da tabela corrigido para 'batches'
         const stmtBatch = db.prepare(`
-          INSERT INTO Batch (id, batchNumber, quantity, expirationDate, productId)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO batches (id, batchNumber, quantity, expirationDate, productId, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `);
         stmtBatch.run(
           batchId,
@@ -46,18 +50,22 @@ export class ProductService {
   }
 
   static getProductById(id: string) {
-    const product: any = db.prepare('SELECT * FROM Product WHERE id = ?').get(id);
+    // Tabela 'products'
+    const product: any = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
     if (!product) return null;
 
-    const category = product.categoryId ? db.prepare('SELECT * FROM Category WHERE id = ?').get(product.categoryId) : null;
-    const supplier = product.supplierId ? db.prepare('SELECT * FROM Supplier WHERE id = ?').get(product.supplierId) : null;
-    const batches = db.prepare('SELECT * FROM Batch WHERE productId = ? AND quantity > 0 ORDER BY expirationDate ASC').all(id);
+    // Tabelas 'categories' e 'suppliers'
+    const category = product.categoryId ? db.prepare('SELECT * FROM categories WHERE id = ?').get(product.categoryId) : null;
+    const supplier = product.supplierId ? db.prepare('SELECT * FROM suppliers WHERE id = ?').get(product.supplierId) : null;
+    
+    // Tabela 'batches'
+    const batches = db.prepare('SELECT * FROM batches WHERE productId = ? ORDER BY expirationDate ASC').all(id);
 
     return { ...product, category, supplier, batches };
   }
 
   static async listProducts() {
-    const products: any[] = db.prepare('SELECT * FROM Product WHERE isActive = 1 ORDER BY name ASC').all();
+    const products: any[] = db.prepare('SELECT * FROM products WHERE isActive = 1 ORDER BY name ASC').all();
     return products.map(p => this.getProductById(p.id));
   }
 
@@ -70,8 +78,8 @@ export class ProductService {
   }) {
     const id = crypto.randomUUID();
     const stmt = db.prepare(`
-      INSERT INTO Batch (id, batchNumber, quantity, manufacturingDate, expirationDate, productId)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO batches (id, batchNumber, quantity, manufacturingDate, expirationDate, productId, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `);
     stmt.run(
       id,
@@ -81,7 +89,7 @@ export class ProductService {
       new Date(data.expirationDate).toISOString(),
       data.productId
     );
-    return db.prepare('SELECT * FROM Batch WHERE id = ?').get(id);
+    return db.prepare('SELECT * FROM batches WHERE id = ?').get(id);
   }
 
   static async getExpirationAlerts() {
@@ -91,7 +99,7 @@ export class ProductService {
     const limit90 = new Date(now); limit90.setDate(now.getDate() + 90);
 
     const batches: any[] = db.prepare(`
-      SELECT * FROM Batch 
+      SELECT * FROM batches 
       WHERE quantity > 0 AND expirationDate <= ? 
       ORDER BY expirationDate ASC
     `).all(limit90.toISOString());
@@ -132,16 +140,16 @@ export class ProductService {
   }
 
   static async deleteProduct(id: string) {
-    const salesCount: any = db.prepare('SELECT COUNT(*) as count FROM SaleItem WHERE productId = ?').get(id);
+    const salesCount: any = db.prepare('SELECT COUNT(*) as count FROM sale_items WHERE productId = ?').get(id);
 
     if (salesCount.count > 0) {
-      db.prepare('UPDATE Product SET isActive = 0 WHERE id = ?').run(id);
+      db.prepare('UPDATE products SET isActive = 0 WHERE id = ?').run(id);
       return this.getProductById(id);
     }
 
     const deleteTx = db.transaction(() => {
-      db.prepare('DELETE FROM Batch WHERE productId = ?').run(id);
-      db.prepare('DELETE FROM Product WHERE id = ?').run(id);
+      db.prepare('DELETE FROM batches WHERE productId = ?').run(id);
+      db.prepare('DELETE FROM products WHERE id = ?').run(id);
     });
 
     deleteTx();
@@ -152,23 +160,29 @@ export class ProductService {
     const { initialStock, quantity, batchNumber, expirationDate, ...productData } = data;
     const stockValue = initialStock ?? quantity;
 
+    if (productData.code !== undefined) {
+      productData.code = productData.code && productData.code.trim() !== '' ? productData.code.trim() : null;
+    }
+
     const updateTx = db.transaction(() => {
-      const fields = Object.keys(productData).map(k => `${k} = ?`).join(', ');
-      if (fields) {
-        const values = Object.values(productData);
-        db.prepare(`UPDATE Product SET ${fields}, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(...values, id);
+      const keys = Object.keys(productData);
+      if (keys.length > 0) {
+        const fields = keys.map(k => `${k} = ?`).join(', ');
+        const values = keys.map(k => productData[k]);
+        db.prepare(`UPDATE products SET ${fields}, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`).run(...values, id);
       }
 
       if (stockValue !== undefined && stockValue !== null && !isNaN(stockValue)) {
         const numericStock = Number(stockValue);
-        const existingBatch: any = db.prepare('SELECT * FROM Batch WHERE productId = ? ORDER BY expirationDate ASC LIMIT 1').get(id);
+        const existingBatch: any = db.prepare('SELECT * FROM batches WHERE productId = ? ORDER BY expirationDate ASC LIMIT 1').get(id);
 
         if (existingBatch) {
           db.prepare(`
-            UPDATE Batch 
+            UPDATE batches 
             SET quantity = ?, 
                 batchNumber = COALESCE(?, batchNumber),
-                expirationDate = COALESCE(?, expirationDate)
+                expirationDate = COALESCE(?, expirationDate),
+                updatedAt = CURRENT_TIMESTAMP
             WHERE id = ?
           `).run(
             numericStock,
@@ -179,8 +193,8 @@ export class ProductService {
         } else if (numericStock > 0) {
           const batchId = crypto.randomUUID();
           db.prepare(`
-            INSERT INTO Batch (id, batchNumber, quantity, expirationDate, productId)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO batches (id, batchNumber, quantity, expirationDate, productId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
           `).run(
             batchId,
             batchNumber || `LOTE-AUTO-${Date.now().toString().slice(-6)}`,

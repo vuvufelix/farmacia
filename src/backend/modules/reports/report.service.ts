@@ -5,14 +5,16 @@ export class ReportService {
     const startDate = new Date(year, month - 1, 1).toISOString();
     const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
 
+    // Consulta na tabela mapeada 'sales'
     const sales: any[] = db.prepare(`
-      SELECT * FROM Sale 
+      SELECT * FROM sales 
       WHERE createdAt >= ? AND createdAt <= ? 
       ORDER BY createdAt DESC
     `).all(startDate, endDate);
 
+    // Consulta na tabela mapeada 'returns'
     const returns: any[] = db.prepare(`
-      SELECT * FROM Return 
+      SELECT * FROM returns 
       WHERE createdAt >= ? AND createdAt <= ?
     `).all(startDate, endDate);
 
@@ -24,7 +26,8 @@ export class ReportService {
       totalRevenue += sale.total;
       totalTaxCollected += sale.taxTotal;
 
-      const user: any = db.prepare('SELECT name, username FROM User WHERE id = ?').get(sale.userId);
+      // Tabela 'users'
+      const user: any = db.prepare('SELECT name, username FROM users WHERE id = ?').get(sale.userId);
       const operatorName = user ? user.name : 'Desconhecido';
 
       if (!salesByOperator[operatorName]) {
@@ -33,19 +36,20 @@ export class ReportService {
       salesByOperator[operatorName].count += 1;
       salesByOperator[operatorName].total += sale.total;
 
-      const items = db.prepare('SELECT * FROM SaleItem WHERE saleId = ?').all(sale.id).map((i: any) => ({
+      // Tabela 'sale_items' e 'products'
+      const items = db.prepare('SELECT * FROM sale_items WHERE saleId = ?').all(sale.id).map((i: any) => ({
         ...i,
-        product: db.prepare('SELECT * FROM Product WHERE id = ?').get(i.productId)
+        product: db.prepare('SELECT * FROM products WHERE id = ?').get(i.productId)
       }));
 
       return { ...sale, user, items };
     });
 
     const returnsFormatted = returns.map(ret => {
-      const user: any = db.prepare('SELECT name FROM User WHERE id = ?').get(ret.userId);
-      const saleItem: any = db.prepare('SELECT * FROM SaleItem WHERE id = ?').get(ret.saleItemId);
-      const product = saleItem ? db.prepare('SELECT * FROM Product WHERE id = ?').get(saleItem.productId) : null;
-      const sale: any = db.prepare('SELECT invoiceNumber FROM Sale WHERE id = ?').get(ret.saleId);
+      const user: any = db.prepare('SELECT name FROM users WHERE id = ?').get(ret.userId);
+      const saleItem: any = db.prepare('SELECT * FROM sale_items WHERE id = ?').get(ret.saleItemId);
+      const product = saleItem ? db.prepare('SELECT * FROM products WHERE id = ?').get(saleItem.productId) : null;
+      const sale: any = db.prepare('SELECT invoiceNumber FROM sales WHERE id = ?').get(ret.saleId);
 
       return {
         ...ret,

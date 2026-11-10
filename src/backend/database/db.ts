@@ -30,44 +30,46 @@ const db: Database.Database = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
-// Criação do Esquema Relacional Completo
+// Criação do Esquema Relacional Completo alinhado com os mapeamentos do Prisma (@@map)
 db.exec(`
-  CREATE TABLE IF NOT EXISTS Category (
+  CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    description TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    name TEXT NOT NULL UNIQUE,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TABLE IF NOT EXISTS Supplier (
+  CREATE TABLE IF NOT EXISTS suppliers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    contact TEXT,
     phone TEXT NOT NULL,
     email TEXT,
     address TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    nif TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TABLE IF NOT EXISTS Product (
+  CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     code TEXT UNIQUE,
-    description TEXT,
+    origin TEXT,
     costPrice REAL NOT NULL,
     sellingPrice REAL NOT NULL,
-    minStock INTEGER NOT NULL DEFAULT 5,
-    taxRate REAL NOT NULL DEFAULT 0.14,
-    categoryId TEXT,
-    supplierId TEXT,
+    taxRate REAL NOT NULL DEFAULT 0.0,
+    taxExemption TEXT,
+    minStock INTEGER NOT NULL DEFAULT 10,
     isActive INTEGER NOT NULL DEFAULT 1,
+    categoryId TEXT NOT NULL,
+    supplierId TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (categoryId) REFERENCES Category(id),
-    FOREIGN KEY (supplierId) REFERENCES Supplier(id)
+    FOREIGN KEY (categoryId) REFERENCES categories(id),
+    FOREIGN KEY (supplierId) REFERENCES suppliers(id)
   );
 
-  CREATE TABLE IF NOT EXISTS Batch (
+  CREATE TABLE IF NOT EXISTS batches (
     id TEXT PRIMARY KEY,
     batchNumber TEXT NOT NULL,
     quantity INTEGER NOT NULL,
@@ -75,72 +77,77 @@ db.exec(`
     expirationDate DATETIME NOT NULL,
     productId TEXT NOT NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (productId) REFERENCES products(id) ON DELETE CASCADE
   );
 
-  CREATE TABLE IF NOT EXISTS User (
+  CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'OPERATOR',
+    role TEXT NOT NULL DEFAULT 'CAIXA',
     active INTEGER NOT NULL DEFAULT 1,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TABLE IF NOT EXISTS Sale (
+  CREATE TABLE IF NOT EXISTS sales (
     id TEXT PRIMARY KEY,
     invoiceNumber TEXT UNIQUE NOT NULL,
     subtotal REAL NOT NULL,
     taxTotal REAL NOT NULL,
     total REAL NOT NULL,
-    paymentMethod TEXT NOT NULL,
+    paymentMethod TEXT NOT NULL DEFAULT 'MONEY',
     hash TEXT NOT NULL,
-    qrCodeData TEXT NOT NULL,
+    qrCodeData TEXT,
     userId TEXT NOT NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userId) REFERENCES User(id)
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(id)
   );
 
-  CREATE TABLE IF NOT EXISTS SaleItem (
+  CREATE TABLE IF NOT EXISTS sale_items (
     id TEXT PRIMARY KEY,
-    saleId TEXT NOT NULL,
-    productId TEXT NOT NULL,
-    batchId TEXT NOT NULL,
     quantity INTEGER NOT NULL,
     unitPrice REAL NOT NULL,
     taxRate REAL NOT NULL,
     taxAmount REAL NOT NULL,
     subtotal REAL NOT NULL,
     total REAL NOT NULL,
-    FOREIGN KEY (saleId) REFERENCES Sale(id) ON DELETE CASCADE,
-    FOREIGN KEY (productId) REFERENCES Product(id),
-    FOREIGN KEY (batchId) REFERENCES Batch(id)
+    saleId TEXT NOT NULL,
+    productId TEXT NOT NULL,
+    batchId TEXT NOT NULL,
+    FOREIGN KEY (saleId) REFERENCES sales(id) ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES products(id),
+    FOREIGN KEY (batchId) REFERENCES batches(id)
   );
 
-  CREATE TABLE IF NOT EXISTS Return (
+  CREATE TABLE IF NOT EXISTS returns (
     id TEXT PRIMARY KEY,
+    reason TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    refundAmount REAL NOT NULL,
     saleId TEXT NOT NULL,
     saleItemId TEXT NOT NULL,
     userId TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    reason TEXT NOT NULL,
-    refundAmount REAL NOT NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (saleId) REFERENCES Sale(id),
-    FOREIGN KEY (saleItemId) REFERENCES SaleItem(id),
-    FOREIGN KEY (userId) REFERENCES User(id)
+    FOREIGN KEY (saleId) REFERENCES sales(id),
+    FOREIGN KEY (saleItemId) REFERENCES sale_items(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
   );
 
-  CREATE TABLE IF NOT EXISTS License (
+  CREATE TABLE IF NOT EXISTS licenses (
     id TEXT PRIMARY KEY,
     pharmacyName TEXT NOT NULL,
-    nif TEXT,
+    nif TEXT DEFAULT '5412345678',
     licenseKey TEXT NOT NULL,
     startDate DATETIME NOT NULL,
     expiresAt DATETIME NOT NULL,
     isActive INTEGER NOT NULL DEFAULT 1,
-    lastVerified DATETIME DEFAULT CURRENT_TIMESTAMP
+    lastVerified DATETIME DEFAULT CURRENT_TIMESTAMP,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
 

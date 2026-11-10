@@ -5,7 +5,8 @@ const MASTER_SECRET = 'NENOVA_SECRET_KEY_LUANDA_2026';
 
 export class LicenseService {
   static async getStatus() {
-    let license: any = db.prepare('SELECT * FROM License LIMIT 1').get();
+    // Nota: Confirme se o nome da tabela na sua BD é 'licenses' (conforme o @@map do Prisma) ou 'License'
+    let license: any = db.prepare('SELECT * FROM licenses LIMIT 1').get();
 
     if (!license) {
       const now = new Date();
@@ -14,7 +15,7 @@ export class LicenseService {
       const id = crypto.randomUUID();
 
       db.prepare(`
-        INSERT INTO License (id, pharmacyName, licenseKey, startDate, isActive, expiresAt)
+        INSERT INTO licenses (id, pharmacyName, licenseKey, startDate, isActive, expiresAt)
         VALUES (?, ?, ?, ?, 1, ?)
       `).run(
         id,
@@ -24,22 +25,24 @@ export class LicenseService {
         initialExpiration.toISOString()
       );
 
-      license = db.prepare('SELECT * FROM License WHERE id = ?').get(id);
+      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(id);
     }
 
     const now = new Date();
-    const isExpired = new Date(license.expiresAt) < now;
+    const expiresAtDate = new Date(license.expiresAt);
+    const isExpired = expiresAtDate < now;
+    const isActiveBool = Boolean(license.isActive);
 
-    if (isExpired && license.isActive) {
-      db.prepare('UPDATE License SET isActive = 0 WHERE id = ?').run(license.id);
+    if (isExpired && isActiveBool) {
+      db.prepare('UPDATE licenses SET isActive = 0 WHERE id = ?').run(license.id);
       license.isActive = 0;
     }
 
     return {
       id: license.id,
-      isActive: license.isActive === 1 && !isExpired,
+      isActive: Boolean(license.isActive) && !isExpired,
       expiresAt: license.expiresAt,
-      daysRemaining: Math.max(0, Math.ceil((new Date(license.expiresAt).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))),
+      daysRemaining: Math.max(0, Math.ceil((expiresAtDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))),
     };
   }
 
@@ -54,7 +57,7 @@ export class LicenseService {
     const clientNif = match[2];
     const hashProvided = match[3];
 
-    let license: any = db.prepare('SELECT * FROM License LIMIT 1').get();
+    let license: any = db.prepare('SELECT * FROM licenses LIMIT 1').get();
 
     if (license && license.nif) {
       if (license.nif !== clientNif) {
@@ -82,8 +85,8 @@ export class LicenseService {
 
     if (license) {
       db.prepare(`
-        UPDATE License 
-        SET nif = ?, licenseKey = ?, isActive = 1, expiresAt = ?, lastVerified = ?
+        UPDATE licenses 
+        SET nif = ?, licenseKey = ?, isActive = 1, expiresAt = ?, lastVerified = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
       `).run(
         clientNif,
@@ -92,11 +95,11 @@ export class LicenseService {
         now.toISOString(),
         license.id
       );
-      license = db.prepare('SELECT * FROM License WHERE id = ?').get(license.id);
+      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(license.id);
     } else {
       const id = crypto.randomUUID();
       db.prepare(`
-        INSERT INTO License (id, pharmacyName, nif, licenseKey, startDate, isActive, expiresAt)
+        INSERT INTO licenses (id, pharmacyName, nif, licenseKey, startDate, isActive, expiresAt)
         VALUES (?, ?, ?, ?, ?, 1, ?)
       `).run(
         id,
@@ -106,7 +109,7 @@ export class LicenseService {
         now.toISOString(),
         newExpiration.toISOString()
       );
-      license = db.prepare('SELECT * FROM License WHERE id = ?').get(id);
+      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(id);
     }
 
     return {
@@ -116,14 +119,15 @@ export class LicenseService {
     };
   }
 
-  static generateKeyForClient(months: 1 | 3 | 6 | 12): string {
+  static generateKeyForClient(months: 1 | 3 | 6 | 12, nif: string): string {
+    const cleanNif = nif.trim().toUpperCase();
     const hash = crypto
       .createHmac('sha256', MASTER_SECRET)
-      .update(`PLAN-${months}-MONTHS`)
+      .update(`PLAN-${months}-MONTHS-${cleanNif}`)
       .digest('hex')
       .substring(0, 8)
       .toUpperCase();
 
-    return `NV-${months}-${hash}`;
+    return `NV-${months}-${cleanNif}-${hash}`;
   }
 }

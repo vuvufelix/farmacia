@@ -15,6 +15,7 @@
   ],
   "linux": {
     "target": ["deb"],
+    "icon": "public/icon.png",
     "maintainer": "Nenova Tech <vuvu@nenovatech.ao>",
     "category": "Office"
   }

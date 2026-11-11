@@ -11,7 +11,8 @@
     "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
     "build": "npm run compile && electron-builder",
     "start": "electron .",
-    "main": "dist/main/index.js"
+    "main": "dist/main/index.js",
+    "db:reset": "node -e \"const fs = require('fs'); ['database.db', 'database.db-wal', 'database.db-shm'].forEach(f => { if (fs.existsSync(f)) { fs.unlinkSync(f); console.log(f + ' apagado.'); } }); console.log('Base de dados limpa com sucesso!');\""
   },
   "keywords": [
     "electron",

@@ -11,7 +11,8 @@
     "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
     "build": "npm run compile && electron-builder",
     "start": "electron .",
-    "main": "dist/main/index.js"
+    "main": "dist/main/index.js",
+    "db:reset": "node -e \"const fs = require('fs'); ['database.db', 'database.db-wal', 'database.db-shm'].forEach(f => { if (fs.existsSync(f)) { fs.unlinkSync(f); console.log(f + ' apagado.'); } }); console.log('Base de dados limpa com sucesso!');\""
   },
   "keywords": [
     "electron",
@@ -27,7 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^11.0.0",
+    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
@@ -42,7 +43,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.19.43",
     "concurrently": "^8.2.2",
-    "electron": "^29.1.0",
+    "electron": "^29.4.6",
     "electron-builder": "^24.13.3",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3"

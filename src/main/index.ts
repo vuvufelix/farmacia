@@ -15,7 +15,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
-    icon: path.join(__dirname, '../../public/gemini-svg.svg'),
+    icon: path.join(__dirname, '../../public/icon.png'), // <-- Apontar para o PNG
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true

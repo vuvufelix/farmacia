@@ -8,9 +8,9 @@
     "dev:backend": "tsx watch src/backend/server.ts",
     "compile": "tsc",
     "seed": "node --import tsx seed.ts",
-    "electron:dev": "concurrently \"npm run dev:backend\" \"electron .\"",
-    "build": "npm run compile && electron-builder",
-    "start": "electron .",
+    "electron:dev": "concurrently \"npm run dev:backend\" \"ELECTRON_DISABLE_SANDBOX=1 electron .\"",
+    "build": "npm run compile && electron-builder install-app-deps && npm rebuild better-sqlite3 --build-from-source && electron-builder --linux deb",
+    "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
     "main": "dist/main/index.js",
     "db:reset": "node -e \"const fs = require('fs'); ['database.db', 'database.db-wal', 'database.db-shm'].forEach(f => { if (fs.existsSync(f)) { fs.unlinkSync(f); console.log(f + ' apagado.'); } }); console.log('Base de dados limpa com sucesso!');\""
   },

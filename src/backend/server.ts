@@ -21,7 +21,12 @@ const app = express()
 const publicPath = path.join(__dirname, '../../public'); // ajuste conforme a localização do dist/public
 app.use(express.static(publicPath));
 
-app.use(cors())
+// 🌍 1. CONFIGURAÇÃO DO CORS (Permite requisições locais do Electron e do frontend)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(express.json())
 
 // Rota de estado do sistema e validação da licença (Segura com try/catch)
@@ -59,8 +64,4 @@ export function startServer(port: number): Promise<void> {
       resolve()
     })
   })
-}
-
-if (process.env.NODE_ENV === 'development') {
-  startServer(3333)
 }

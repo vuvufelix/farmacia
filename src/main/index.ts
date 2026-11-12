@@ -2,8 +2,8 @@ import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-// 🚀 IMPORTAR O BACKEND AUTOMATICAMENTE NO ARRANQUE DO ELECTRON
-import '../backend/server.js'; // Nota: em ESM com TypeScript compilado para JS, usa a extensão .js se necessário
+// 🚀 IMPORTAR A FUNÇÃO DE ARRANQUE DO BACKEND
+import { startServer } from '../backend/server.js';
 
 // Recriar __dirname e __filename para ambientes ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -24,14 +24,29 @@ function createWindow(): void {
     title: 'MedLote OS - Gestão Farmacêutica'
   });
 
-  mainWindow.loadURL('http://localhost:3333');
+  // 🛠️ Verificação inteligente: Produção vs Desenvolvimento
+  if (app.isPackaged) {
+    // Em produção (instalado no .deb), o servidor Express serve os estáticos na porta 3333
+    // Logo, podemos carregar diretamente via HTTP local para que as rotas da API funcionem perfeitamente!
+    mainWindow.loadURL('http://localhost:3333');
+  } else {
+    // Em desenvolvimento, aponta para o servidor local do Vite/Backend
+    mainWindow.loadURL('http://localhost:3333');
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // 🚀 INICIA O SERVIDOR EXPRESS OBRIGATORIAMENTE ANTES DE CRIAR A JANELA
+  try {
+    await startServer(3333);
+  } catch (error) {
+    console.error("❌ Falha crítica ao iniciar o servidor backend:", error);
+  }
+
   createWindow();
 
   app.on('activate', () => {

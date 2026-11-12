@@ -2,10 +2,6 @@ import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-// 🚀 IMPORTAR A FUNÇÃO DE ARRANQUE DO BACKEND
-import { startServer } from '../backend/server.js';
-
-// Recriar __dirname e __filename para ambientes ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -24,15 +20,7 @@ function createWindow(): void {
     title: 'MedLote OS - Gestão Farmacêutica'
   });
 
-  // 🛠️ Verificação inteligente: Produção vs Desenvolvimento
-  if (app.isPackaged) {
-    // Em produção (instalado no .deb), o servidor Express serve os estáticos na porta 3333
-    // Logo, podemos carregar diretamente via HTTP local para que as rotas da API funcionem perfeitamente!
-    mainWindow.loadURL('http://localhost:3333');
-  } else {
-    // Em desenvolvimento, aponta para o servidor local do Vite/Backend
-    mainWindow.loadURL('http://localhost:3333');
-  }
+  mainWindow.loadURL('http://localhost:3333');
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -40,8 +28,13 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
-  // 🚀 INICIA O SERVIDOR EXPRESS OBRIGATORIAMENTE ANTES DE CRIAR A JANELA
+  // 🛡️ PASSO CRUCIAL: Define o caminho exato do userData para o SQLite antes de carregar o backend
+  process.env.DB_USER_DATA_PATH = app.getPath('userData');
+  console.log('📂 userData do Electron configurado:', process.env.DB_USER_DATA_PATH);
+
+  // Importa e inicia o servidor Express dinamicamente após o ambiente estar pronto
   try {
+    const { startServer } = await import('../backend/server.js');
     await startServer(3333);
   } catch (error) {
     console.error("❌ Falha crítica ao iniciar o servidor backend:", error);

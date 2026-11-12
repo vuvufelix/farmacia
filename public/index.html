@@ -1980,17 +1980,38 @@
     }
 
     async function openProductModal() {
-      // 1. Limpar o formulário e anular o ID de edição
+      // 1. Limpa o ID de edição (para garantir que é um produto novo)
       editingProductId = null;
+
+      // 2. Reseta o formulário inteiro
       const form = document.getElementById('product-form');
       if (form) form.reset();
 
-      // 2. Repor o título original do modal (caso tenha sido alterado para "Editar")
-      const modalHeaderTitle = document.querySelector('#product-modal h3 span:last-child');
-      if (modalHeaderTitle) modalHeaderTitle.textContent = 'Cadastrar Novo Produto';
+      // 3. Limpa explicitamente e destrava os campos de lote e validade
+      const batchInput = document.getElementById('prod-batch');
+      const expiryInput = document.getElementById('prod-expiry');
+      const qtyInput = document.getElementById('prod-qty');
 
-      // 3. Abrir o modal e carregar os dados auxiliares
+      if (batchInput) {
+        batchInput.value = '';
+        batchInput.removeAttribute('readonly');
+        batchInput.removeAttribute('disabled');
+      }
+      if (expiryInput) {
+        expiryInput.value = '';
+        expiryInput.removeAttribute('readonly');
+        expiryInput.removeAttribute('disabled');
+      }
+      if (qtyInput) {
+        qtyInput.value = '';
+        qtyInput.removeAttribute('readonly');
+        qtyInput.removeAttribute('disabled');
+      }
+
+      // 4. Mostra o contentor do lote inicial e o modal
+      document.getElementById('initial-batch-container').classList.remove('hidden');
       document.getElementById('product-modal').classList.remove('hidden');
+      
       await loadCategoriesAndSuppliers();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }

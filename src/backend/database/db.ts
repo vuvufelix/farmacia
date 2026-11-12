@@ -1,37 +1,27 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
-// Obtenção segura do diretório de dados sem importar estaticamente o 'app' do Electron
-let userDataPath: string;
-
-try {
-  // Tenta obter dinamicamente se estivermos no processo principal do Electron
-  // @ts-ignore
-  if (process.versions && process.versions.electron) {
-    // Importação dinâmica para evitar erro de módulo estático no Node puro
-    const electron = eval('require')('electron');
-    const electronApp = electron.app || (electron.remote && electron.remote.app);
-    userDataPath = electronApp ? electronApp.getPath('userData') : process.cwd();
-  } else {
-    userDataPath = process.cwd();
-  }
-} catch {
-  userDataPath = process.cwd();
-}
+// 📂 Obtém o caminho seguro enviado pelo processo principal do Electron ou usa o cwd em desenvolvimento
+const userDataPath = process.env.DB_USER_DATA_PATH || process.cwd();
 
 if (!fs.existsSync(userDataPath)) {
   fs.mkdirSync(userDataPath, { recursive: true });
 }
 
 const dbPath = path.join(userDataPath, 'database.db');
-const db: Database.Database = new Database(dbPath);
+console.log('📂 Caminho oficial da Base de Dados:', dbPath);
 
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+// 🛠️ Correção do erro TypeScript: tipagem explícita 'any' evita conflito com tipos externos do better-sqlite3
+const dbInstance: any = new Database(dbPath);
 
-// Criação do Esquema Relacional Completo alinhado com os mapeamentos do Prisma (@@map)
-db.exec(`
+dbInstance.pragma('journal_mode = WAL');
+dbInstance.pragma('foreign_keys = ON');
+
+// 🏗️ Criação do Esquema Relacional Completo
+dbInstance.exec(`
   CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
@@ -151,4 +141,85 @@ db.exec(`
   );
 `);
 
-export default db;
+// 🌱 SEED AUTOMÁTICO NO PRIMEIRO ARRANQUE
+const adminCheck = dbInstance.prepare('SELECT COUNT(*) as count FROM users WHERE username = ?').get('admin') as { count: number };
+
+if (adminCheck.count === 0) {
+  console.log('🌱 A popular a base de dados com dados iniciais (Seed automático)...');
+  const passwordHash = bcrypt.hashSync('123456', 10);
+
+  // 🆔 Geração de UUIDs válidos para satisfazer as validações Zod nas vendas
+  const adminId = crypto.randomUUID();
+  const caixaId = crypto.randomUUID();
+  const contId = crypto.randomUUID();
+
+  const insertUser = dbInstance.prepare(`
+    INSERT INTO users (id, name, username, password, role, active, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `);
+
+  insertUser.run(adminId, 'Administrador Geral', 'admin', passwordHash, 'ADMIN');
+  insertUser.run(caixaId, 'Operador de Caixa', 'caixa1', passwordHash, 'CAIXA');
+  insertUser.run(contId, 'Contabilista', 'contabilista', passwordHash, 'ACCOUNTANT');
+
+  const shalinaId = crypto.randomUUID();
+  dbInstance.prepare(`
+    INSERT INTO suppliers (id, name, phone, email, address, nif, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `).run(shalinaId, 'Shalina Healthcare', '+244923000000', 'vendas@shalina.co.ao', 'Luanda, Angola', '5401122334');
+
+  const categoriesData = [
+    'Analgésicos e Antipiréticos', 'Antibióticos e Anti-infeciosos', 'Anti-inflamatórios (AINEs)',
+    'Gastrointestinais e Antiácidos', 'Antialérgicos e Anti-histamínicos', 'Vitaminas, Minerais e Suplementos',
+    'Cardiovasculares e Hipertensão', 'Sistema Respiratório e Tosse', 'Antimaláricos',
+    'Dermatológicos e Pomadas', 'Oftálmicos e Gotas Otológicas', 'Primeiros Socorros e Pensos',
+    'Linha Infantil e Pediátrica', 'Contraceptivos e Saúde Sexual', 'Higiene Pessoal e Cuidados Diários'
+  ];
+
+  const categoryIds: Record<string, string> = {};
+  const insertCat = dbInstance.prepare('INSERT INTO categories (id, name, createdAt, updatedAt) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)');
+
+  for (const catName of categoriesData) {
+    const id = crypto.randomUUID();
+    insertCat.run(id, catName);
+    categoryIds[catName] = id;
+  }
+
+  const paracetamolId = crypto.randomUUID();
+  const amoxicilinaId = crypto.randomUUID();
+
+  const insertProd = dbInstance.prepare(`
+    INSERT INTO products (id, name, code, origin, costPrice, sellingPrice, taxRate, minStock, categoryId, supplierId, isActive, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `);
+
+  insertProd.run(paracetamolId, 'Paracetamol Shalina 500mg', '5601234567890', 'Importado', 800, 1500, 0.14, 20, categoryIds['Analgésicos e Antipiréticos'], shalinaId);
+  insertProd.run(amoxicilinaId, 'Amoxicilina 500mg Caps', '5609876543210', 'Importado', 2000, 3500, 0.14, 15, categoryIds['Antibióticos e Anti-infeciosos'], shalinaId);
+
+  const now = new Date();
+  const expireIn20Days = new Date(now);
+  expireIn20Days.setDate(now.getDate() + 20);
+  const expireIn90Days = new Date(now);
+  expireIn90Days.setDate(now.getDate() + 90);
+
+  const insertBatch = dbInstance.prepare(`
+    INSERT INTO batches (id, batchNumber, quantity, manufacturingDate, expirationDate, productId, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `);
+
+  insertBatch.run(crypto.randomUUID(), 'L-PAR2026-01', 50, new Date('2024-01-01').toISOString(), expireIn20Days.toISOString(), paracetamolId);
+  insertBatch.run(crypto.randomUUID(), 'L-AMO2026-02', 30, new Date('2024-03-01').toISOString(), expireIn90Days.toISOString(), amoxicilinaId);
+
+  const startDate = new Date();
+  const expiresAt = new Date();
+  expiresAt.setDate(startDate.getDate() + 30);
+
+  dbInstance.prepare(`
+    INSERT INTO licenses (id, pharmacyName, nif, licenseKey, startDate, expiresAt, isActive, lastVerified, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `).run(crypto.randomUUID(), 'Farmácia Demonstração Nenova', '5401122334', 'NENOVA-INITIAL-TRIAL', startDate.toISOString(), expiresAt.toISOString());
+
+  console.log('✅ Base de dados semeada com sucesso automaticamente!');
+}
+
+export default dbInstance;

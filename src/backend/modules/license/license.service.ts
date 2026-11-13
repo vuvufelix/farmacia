@@ -1,133 +1,91 @@
 import db from '../../database/db.js';
+import { CryptoService, LicensePayload } from '../../utils/crypto.js';
 import crypto from 'crypto';
 
-const MASTER_SECRET = 'NENOVA_SECRET_KEY_LUANDA_2026';
-
 export class LicenseService {
+  /**
+   * Retorna o estado atual da licença garantindo consistência (ordenado por data de criação descrescente).
+   */
   static async getStatus() {
-    // Nota: Confirme se o nome da tabela na sua BD é 'licenses' (conforme o @@map do Prisma) ou 'License'
-    let license: any = db.prepare('SELECT * FROM licenses LIMIT 1').get();
+    // Correção do problema do LIMIT 1 sem ORDER BY: Ordenamos por createdAt DESC
+    let license: any = db.prepare(
+      'SELECT * FROM licenses ORDER BY createdAt DESC LIMIT 1'
+    ).get();
 
     if (!license) {
+      // Registo de licença inicial por defeito / demo se não existir nenhuma
+      const defaultId = crypto.randomUUID();
       const now = new Date();
-      const initialExpiration = new Date();
-      initialExpiration.setDate(initialExpiration.getDate() + 30);
-      const id = crypto.randomUUID();
+      const expires = new Date();
+      expires.setDate(now.getDate() + 7); // 7 dias de demo inicial
 
       db.prepare(`
-        INSERT INTO licenses (id, pharmacyName, licenseKey, startDate, isActive, expiresAt)
-        VALUES (?, ?, ?, ?, 1, ?)
+        INSERT INTO licenses (id, pharmacyName, licenseKey, nif, planMonths, isActive, startDate, expiresAt, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       `).run(
-        id,
-        'Farmácia Nenova Tech (Demo)',
-        'NENOVA-INITIAL-TRIAL',
+        defaultId,
+        'Farmácia Demonstração',
+        'DEMO-TRIAL-KEY',
+        'CONSUMidor_DEMO',
+        1,
+        1,
         now.toISOString(),
-        initialExpiration.toISOString()
+        expires.toISOString()
       );
 
-      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(id);
+      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(defaultId);
     }
 
     const now = new Date();
-    const expiresAtDate = new Date(license.expiresAt);
-    const isExpired = expiresAtDate < now;
-    const isActiveBool = Boolean(license.isActive);
-
-    if (isExpired && isActiveBool) {
-      db.prepare('UPDATE licenses SET isActive = 0 WHERE id = ?').run(license.id);
-      license.isActive = 0;
-    }
+    const expiresAt = new Date(license.expiresAt);
+    const diffTime = expiresAt.getTime() - now.getTime();
+    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     return {
-      id: license.id,
-      isActive: Boolean(license.isActive) && !isExpired,
+      isActive: license.isActive === 1 && daysRemaining > 0,
       expiresAt: license.expiresAt,
-      daysRemaining: Math.max(0, Math.ceil((expiresAtDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))),
+      daysRemaining: daysRemaining > 0 ? daysRemaining : 0,
+      nif: license.nif,
+      planMonths: license.planMonths
     };
   }
 
-  static async activateWithKey(activationKey: string) {
-    const cleanKey = activationKey.trim().toUpperCase();
-    const match = cleanKey.match(/^NV-(1|3|6|12)-([A-Z0-9]+)-([A-F0-9]{8})$/);
-    if (!match) {
-      throw new Error('Chave de ativação inválida ou mal formatada. Contacte a Nenova Tech.');
+  /**
+   * Ativa a licença validando a assinatura criptográfica e prevenindo a reutilização da mesma chave.
+   */
+  static async activateLicense(signedData: { licenseKey: string; payload: LicensePayload; signature: string }) {
+    const { licenseKey, payload, signature } = signedData;
+
+    // 1. Verificar se esta exata chave de licença ou ID único já foi ativado anteriormente no banco
+    const existing = db.prepare('SELECT * FROM licenses WHERE licenseKey = ? OR id = ?').get(licenseKey, payload.licenseId);
+    if (existing) {
+      throw new Error('Esta chave de ativação já foi utilizada anteriormente. A reutilização é proibida.');
     }
 
-    const months = parseInt(match[1], 10);
-    const clientNif = match[2];
-    const hashProvided = match[3];
+    // 2. Validar a assinatura digital da licença usando a chave pública
+    const dataString = JSON.stringify(payload);
+    const isValidSignature = CryptoService.verifyLicense(dataString, signature);
 
-    let license: any = db.prepare('SELECT * FROM licenses LIMIT 1').get();
-
-    if (license && license.nif) {
-      if (license.nif !== clientNif) {
-        throw new Error(`Erro de Segurança: Esta chave foi emitida para o NIF ${clientNif}, mas o NIF registado nesta farmácia é ${license.nif}!`);
-      }
+    if (!isValidSignature) {
+      throw new Error('A assinatura da licença é inválida ou foi adulterada.');
     }
 
-    const expectedHash = crypto
-      .createHmac('sha256', MASTER_SECRET)
-      .update(`PLAN-${months}-MONTHS-${clientNif}`)
-      .digest('hex')
-      .substring(0, 8)
-      .toUpperCase();
+    // 3. Registar a nova licença de forma segura na base de dados (incluindo pharmacyName)
+    const stmt = db.prepare(`
+      INSERT INTO licenses (id, pharmacyName, licenseKey, nif, planMonths, isActive, startDate, expiresAt, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, 1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `);
 
-    if (hashProvided !== expectedHash) {
-      throw new Error('Chave de ativação incorreta ou alterada.');
-    }
+    stmt.run(
+      payload.licenseId,
+      `Farmácia NIF: ${payload.nif}`, // Preenche o campo pharmacyName para satisfazer a restrição NOT NULL
+      licenseKey,
+      payload.nif,
+      payload.planMonths,
+      payload.startDate,
+      payload.expiresAt
+    );
 
-    const status = await this.getStatus();
-    const now = new Date();
-    let baseDate = status.isActive && new Date(status.expiresAt) > now ? new Date(status.expiresAt) : now;
-    
-    const newExpiration = new Date(baseDate);
-    newExpiration.setMonth(newExpiration.getMonth() + months);
-
-    if (license) {
-      db.prepare(`
-        UPDATE licenses 
-        SET nif = ?, licenseKey = ?, isActive = 1, expiresAt = ?, lastVerified = ?, updatedAt = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `).run(
-        clientNif,
-        cleanKey,
-        newExpiration.toISOString(),
-        now.toISOString(),
-        license.id
-      );
-      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(license.id);
-    } else {
-      const id = crypto.randomUUID();
-      db.prepare(`
-        INSERT INTO licenses (id, pharmacyName, nif, licenseKey, startDate, isActive, expiresAt)
-        VALUES (?, ?, ?, ?, ?, 1, ?)
-      `).run(
-        id,
-        `Farmácia (NIF: ${clientNif})`,
-        clientNif,
-        cleanKey,
-        now.toISOString(),
-        newExpiration.toISOString()
-      );
-      license = db.prepare('SELECT * FROM licenses WHERE id = ?').get(id);
-    }
-
-    return {
-      message: `Licença ativada com sucesso para o NIF ${clientNif} por ${months} mês(es)!`,
-      expiresAt: license.expiresAt,
-      isActive: true,
-    };
-  }
-
-  static generateKeyForClient(months: 1 | 3 | 6 | 12, nif: string): string {
-    const cleanNif = nif.trim().toUpperCase();
-    const hash = crypto
-      .createHmac('sha256', MASTER_SECRET)
-      .update(`PLAN-${months}-MONTHS-${cleanNif}`)
-      .digest('hex')
-      .substring(0, 8)
-      .toUpperCase();
-
-    return `NV-${months}-${cleanNif}-${hash}`;
+    return { success: true, message: 'Licença ativada com sucesso por assinatura digital.' };
   }
 }

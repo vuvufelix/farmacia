@@ -13,7 +13,8 @@
     "start": "ELECTRON_DISABLE_SANDBOX=1 electron .",
     "main": "dist/main/index.js",
     "db:reset": "node -e \"const fs = require('fs'); ['database.db', 'database.db-wal', 'database.db-shm'].forEach(f => { if (fs.existsSync(f)) { fs.unlinkSync(f); console.log(f + ' apagado.'); } }); console.log('Base de dados limpa com sucesso!');\"",
-    "key": "tsx watch src/gerar-chave.ts"
+    "key": "tsx watch src/gerar-chave.ts",
+    "chave": "npx tsx src/keygen.ts"
   },
   "keywords": [
     "electron",

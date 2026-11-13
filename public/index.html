@@ -556,7 +556,7 @@
             <form id="license-activation-form" onsubmit="submitLicenseKey(event)" class="space-y-4 text-xs">
               <div>
                 <label class="block font-medium text-gray-700 mb-1">Chave de Ativação (License Key)</label>
-                <input type="text" id="lic-input-key" required placeholder="Ex: NV-1-XXXXXXXX ou NV-12-XXXXXXXX" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono text-sm uppercase tracking-wide">
+                <textarea id="lic-input-key" required rows="4" placeholder="Cole aqui o objeto JSON completo fornecido pelo suporte..." class="w-full border border-gray-300 rounded-lg p-2.5 font-mono text-xs tracking-wide"></textarea>
               </div>
 
               <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100">
@@ -2334,24 +2334,34 @@
       }
     }
 
-    // Submeter a Chave de Ativação
+    // Submeter a Chave de Ativação (Compatível com JSON Assinado e Chave Simples)
     async function submitLicenseKey(event) {
       event.preventDefault();
       const keyInput = document.getElementById('lic-input-key').value.trim();
 
       if (!keyInput) {
-        showModal('Atenção', 'Insira uma chave de ativação válida.', true);
+        showModal('Atenção', 'Insira os dados ou a chave de ativação.', true);
         return;
       }
 
       try {
+        let payloadToSend;
+
+        // Tenta ver se é um JSON completo (com assinatura Ed25519) ou texto plano
+        try {
+          payloadToSend = JSON.parse(keyInput);
+        } catch (err) {
+          // Se não for JSON, envia como chave simples para retrocompatibilidade
+          payloadToSend = { licenseKey: keyInput };
+        }
+
         const res = await fetch(`${API_BASE}/license/activate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${authToken}`
           },
-          body: JSON.stringify({ key: keyInput })
+          body: JSON.stringify(payloadToSend)
         });
 
         const data = await res.json();

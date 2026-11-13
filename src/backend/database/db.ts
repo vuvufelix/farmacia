@@ -132,6 +132,7 @@ dbInstance.exec(`
     pharmacyName TEXT NOT NULL,
     nif TEXT DEFAULT '5412345678',
     licenseKey TEXT NOT NULL,
+    planMonths INTEGER DEFAULT 1,
     startDate DATETIME NOT NULL,
     expiresAt DATETIME NOT NULL,
     isActive INTEGER NOT NULL DEFAULT 1,
@@ -220,9 +221,9 @@ if (adminCheck.count === 0) {
   expiresAt.setDate(startDate.getDate() + 30);
 
   dbInstance.prepare(`
-    INSERT INTO licenses (id, pharmacyName, nif, licenseKey, startDate, expiresAt, isActive, lastVerified, createdAt, updatedAt)
-    VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-  `).run(crypto.randomUUID(), 'Farmácia Demonstração Nenova', '5401122334', 'NENOVA-INITIAL-TRIAL', startDate.toISOString(), expiresAt.toISOString());
+    INSERT INTO licenses (id, pharmacyName, nif, licenseKey, planMonths, startDate, expiresAt, isActive, lastVerified, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `).run(crypto.randomUUID(), 'Farmácia Demonstração Nenova', '5401122334', 'NENOVA-INITIAL-TRIAL', 1, startDate.toISOString(), expiresAt.toISOString());
 
   console.log('✅ Base de dados semeada com sucesso automaticamente!');
 }

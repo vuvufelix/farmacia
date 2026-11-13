@@ -14,12 +14,14 @@ export class LicenseController {
 
   static async activate(req: Request, res: Response) {
     try {
-      const { key } = req.body;
-      if (!key) {
-        return res.status(400).json({ error: 'Por favor, forneça a chave de ativação.' });
+      // Recebe o pacote completo enviado pelo frontend: { licenseKey, payload, signature }
+      const signedData = req.body;
+      
+      if (!signedData || !signedData.licenseKey || !signedData.payload || !signedData.signature) {
+        return res.status(400).json({ error: 'Pacote de ativação incompleto ou inválido.' });
       }
 
-      const result = await LicenseService.activateWithKey(key);
+      const result = await LicenseService.activateLicense(signedData);
       return res.json(result);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });

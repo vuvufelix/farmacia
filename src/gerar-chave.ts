@@ -1,32 +1,34 @@
-import crypto from 'node:crypto';
+import crypto from 'crypto';
+import { CryptoService, LicensePayload } from './backend/utils/crypto.js';
 
-const MASTER_SECRET = 'NENOVA_SECRET_KEY_LUANDA_2026';
+// CHAVE PRIVADA SECRETA DA NENOVA TECH (Nunca deve ir para o cliente / app Electron)
+const PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIM3NY+DJPE2qJvYLs88QNntuSxbJ44BWLZe51GKtu+wh
+-----END PRIVATE KEY-----`;
 
-function generateClientKey(months: 1 | 3 | 6 | 12, clientNif: string): string {
-  const cleanNif = clientNif.trim().toUpperCase();
+function generateSignedLicense(nif: string, planMonths: number) {
+  const licenseId = crypto.randomUUID();
+  const startDate = new Date().toISOString();
   
-  // O payload inclui o plano e o NIF específico da farmácia
-  const payload = `PLAN-${months}-MONTHS-${cleanNif}`;
+  const expires = new Date();
+  expires.setMonth(expires.getMonth() + planMonths);
+  const expiresAt = expires.toISOString();
 
-  const hash = crypto
-    .createHmac('sha256', MASTER_SECRET)
-    .update(payload)
-    .digest('hex')
-    .substring(0, 8)
-    .toUpperCase();
+  const payload: LicensePayload = {
+    licenseId,
+    nif: nif.trim().toUpperCase(),
+    planMonths,
+    issuedAt: new Date().toISOString(),
+    startDate,
+    expiresAt
+  };
 
-  // Retorna a chave gerada com sucesso
-  return `NV-${months}-${cleanNif}-${hash}`;
+  // Assinar com a chave privada
+  const signature = CryptoService.signLicensePayload(payload, PRIVATE_KEY_PEM);
+
+  console.log('=== LICENÇA GERADA COM SUCESSO ===');
+  console.log(JSON.stringify({ licenseKey: `NV-${planMonths}-${payload.nif}-${licenseId.slice(0,8)}`, payload, signature }, null, 2));
 }
 
-// Exemplo de uso para uma farmácia específica com NIF:
-const nifFarmacia = '5401122334';
-
-console.log("========================================");
-console.log(` CHAVES DE ATIVAÇÃO PARA O NIF: ${nifFarmacia}`);
-console.log("========================================");
-console.log("1 Mês (10.000 Kz)   :", generateClientKey(1, nifFarmacia));
-console.log("3 Meses (30.000 Kz) :", generateClientKey(3, nifFarmacia));
-console.log("6 Meses (60.000 Kz) :", generateClientKey(6, nifFarmacia));
-console.log("1 Ano (120.000 Kz)  :", generateClientKey(12, nifFarmacia));
-console.log("========================================");
+// Exemplo de emissão para uma farmácia:
+generateSignedLicense('5401122334', 3);

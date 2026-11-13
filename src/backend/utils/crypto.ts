@@ -1,47 +1,46 @@
-import crypto from 'crypto'
+import crypto from 'crypto';
 
-const SECRET_LICENSE_KEY = process.env.LICENSE_SECRET || 'nenova-tech-offline-secret-key-2026'
+// Chave pública hardcoded na aplicação para validação offline segura.
+// (A chave privada correspondente fica apenas no gerador da Nenova Tech).
+const PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAab735LdKbGeuBVSHu8OG5zXXihlu3JF3th21Q8oBHmc=
+-----END PUBLIC KEY-----`;
 
-interface LicensePayload {
-  pharmacyName: string
-  startDate: string
-  expiresAt: string
+export interface LicensePayload {
+  licenseId: string;
+  nif: string;
+  planMonths: number;
+  issuedAt: string;
+  startDate: string;
+  expiresAt: string;
+  installationId?: string;
 }
 
-export function generateLicenseKey(payload: LicensePayload): string {
-  const dataString = `${payload.pharmacyName}|${payload.startDate}|${payload.expiresAt}`
-  const hmac = crypto.createHmac('sha256', SECRET_LICENSE_KEY).update(dataString).digest('hex')
-  const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64')
-  return `${payloadBase64}.${hmac}`
-}
-
-export function verifyLicenseKey(licenseKey: string): { valid: boolean; payload?: LicensePayload; error?: string } {
-  try {
-    const parts = licenseKey.split('.')
-    if (parts.length !== 2) {
-      return { valid: false, error: 'Formato de chave de licença inválido' }
+export class CryptoService {
+  /**
+   * Valida a assinatura digital Ed25519 de uma licença.
+   */
+  static verifyLicense(licenseString: string, signatureHex: string): boolean {
+    try {
+      const pubKey = crypto.createPublicKey(PUBLIC_KEY_PEM);
+      const isVerified = crypto.verify(
+        null,
+        Buffer.from(licenseString),
+        pubKey,
+        Buffer.from(signatureHex, 'hex')
+      );
+      return isVerified;
+    } catch (error) {
+      return false;
     }
+  }
 
-    const [payloadBase64, hmacSignature] = parts
-    const payloadJson = Buffer.from(payloadBase64, 'base64').toString('utf-8')
-    const payload: LicensePayload = JSON.parse(payloadJson)
-
-    const expectedDataString = `${payload.pharmacyName}|${payload.startDate}|${payload.expiresAt}`
-    const expectedHmac = crypto.createHmac('sha256', SECRET_LICENSE_KEY).update(expectedDataString).digest('hex')
-
-    if (hmacSignature !== expectedHmac) {
-      return { valid: false, error: 'Assinatura digital da licença é inválida' }
-    }
-
-    const expirationDate = new Date(payload.expiresAt)
-    const currentDate = new Date()
-
-    if (currentDate > expirationDate) {
-      return { valid: false, payload, error: 'Subscrição mensal de 10.000 Kz expirou' }
-    }
-
-    return { valid: true, payload }
-  } catch {
-    return { valid: false, error: 'Erro ao validar a chave de licença' }
+  /**
+   * Função utilitária para uso exclusivo do Gerador da Nenova Tech (Chave Privada).
+   */
+  static signLicensePayload(payload: LicensePayload, privateKeyPem: string): string {
+    const dataString = JSON.stringify(payload);
+    const signature = crypto.sign(null, Buffer.from(dataString), crypto.createPrivateKey(privateKeyPem));
+    return signature.toString('hex');
   }
 }

@@ -196,19 +196,24 @@ if (adminCheck.count === 0) {
   insertProd.run(paracetamolId, 'Paracetamol Shalina 500mg', '5601234567890', 'Importado', 800, 1500, 0.14, 20, categoryIds['Analgésicos e Antipiréticos'], shalinaId);
   insertProd.run(amoxicilinaId, 'Amoxicilina 500mg Caps', '5609876543210', 'Importado', 2000, 3500, 0.14, 15, categoryIds['Antibióticos e Anti-infeciosos'], shalinaId);
 
+  // 🕒 DATAS DINÂMICAS ATUAIS (Sem datas estáticas ou antigas)
   const now = new Date();
-  const expireIn20Days = new Date(now);
-  expireIn20Days.setDate(now.getDate() + 20);
-  const expireIn90Days = new Date(now);
-  expireIn90Days.setDate(now.getDate() + 90);
+  const manufacturingDate = new Date(now);
+  manufacturingDate.setMonth(now.getMonth() - 2); // Fabricado há 2 meses
+
+  const expireIn1Year = new Date(now);
+  expireIn1Year.setFullYear(now.getFullYear() + 1); // Expira daqui a 1 ano
+
+  const expireIn6Months = new Date(now);
+  expireIn6Months.setMonth(now.getMonth() + 6); // Expira daqui a 6 meses
 
   const insertBatch = dbInstance.prepare(`
     INSERT INTO batches (id, batchNumber, quantity, manufacturingDate, expirationDate, productId, createdAt, updatedAt)
     VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
   `);
 
-  insertBatch.run(crypto.randomUUID(), 'L-PAR2026-01', 50, new Date('2024-01-01').toISOString(), expireIn20Days.toISOString(), paracetamolId);
-  insertBatch.run(crypto.randomUUID(), 'L-AMO2026-02', 30, new Date('2024-03-01').toISOString(), expireIn90Days.toISOString(), amoxicilinaId);
+  insertBatch.run(crypto.randomUUID(), 'LOTE-PAR-2026', 50, manufacturingDate.toISOString(), expireIn1Year.toISOString(), paracetamolId);
+  insertBatch.run(crypto.randomUUID(), 'LOTE-AMO-2026', 30, manufacturingDate.toISOString(), expireIn6Months.toISOString(), amoxicilinaId);
 
   const startDate = new Date();
   const expiresAt = new Date();

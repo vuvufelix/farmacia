@@ -9,7 +9,6 @@ export class ProductService {
     const safeCode = productData.code && productData.code.trim() !== '' ? productData.code.trim() : null;
 
     const createTx = db.transaction(() => {
-      // Nome da tabela corrigido para 'products'
       const stmtProd = db.prepare(`
         INSERT INTO products (id, name, code, origin, costPrice, sellingPrice, minStock, taxRate, categoryId, supplierId, isActive, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -27,18 +26,22 @@ export class ProductService {
         productData.supplierId || null
       );
 
+      // Só cria o lote se houver stock inicial E se o número do lote e a validade forem fornecidos pelo utilizador
       if (initialStock !== undefined && initialStock !== null && Number(initialStock) >= 0) {
+        if (!batchNumber || !expirationDate) {
+          throw new Error('O número do lote e a data de validade são obrigatórios quando o stock inicial é preenchido.');
+        }
+
         const batchId = crypto.randomUUID();
-        // Nome da tabela corrigido para 'batches'
         const stmtBatch = db.prepare(`
           INSERT INTO batches (id, batchNumber, quantity, expirationDate, productId, createdAt, updatedAt)
           VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `);
         stmtBatch.run(
           batchId,
-          batchNumber || `LOTE-${Date.now().toString().slice(-6)}`,
+          String(batchNumber).trim(),
           Number(initialStock),
-          expirationDate ? new Date(expirationDate).toISOString() : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          new Date(expirationDate).toISOString(),
           productId
         );
       }
@@ -50,15 +53,12 @@ export class ProductService {
   }
 
   static getProductById(id: string) {
-    // Tabela 'products'
     const product: any = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
     if (!product) return null;
 
-    // Tabelas 'categories' e 'suppliers'
     const category = product.categoryId ? db.prepare('SELECT * FROM categories WHERE id = ?').get(product.categoryId) : null;
     const supplier = product.supplierId ? db.prepare('SELECT * FROM suppliers WHERE id = ?').get(product.supplierId) : null;
     
-    // Tabela 'batches'
     const batches = db.prepare('SELECT * FROM batches WHERE productId = ? ORDER BY expirationDate ASC').all(id);
 
     return { ...product, category, supplier, batches };
@@ -186,20 +186,24 @@ export class ProductService {
             WHERE id = ?
           `).run(
             numericStock,
-            batchNumber || null,
+            batchNumber ? String(batchNumber).trim() : null,
             expirationDate ? new Date(expirationDate).toISOString() : null,
             existingBatch.id
           );
         } else if (numericStock > 0) {
+          if (!batchNumber || !expirationDate) {
+            throw new Error('O número do lote e a data de validade são obrigatórios ao criar o lote.');
+          }
+
           const batchId = crypto.randomUUID();
           db.prepare(`
             INSERT INTO batches (id, batchNumber, quantity, expirationDate, productId, createdAt, updatedAt)
             VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
           `).run(
             batchId,
-            batchNumber || `LOTE-AUTO-${Date.now().toString().slice(-6)}`,
+            String(batchNumber).trim(),
             numericStock,
-            expirationDate ? new Date(expirationDate).toISOString() : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            new Date(expirationDate).toISOString(),
             id
           );
         }

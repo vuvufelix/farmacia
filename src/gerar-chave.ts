@@ -20,7 +20,7 @@ function generateClientKey(months: 1 | 3 | 6 | 12, clientNif: string): string {
 }
 
 // Exemplo de uso para uma farmácia específica com NIF:
-const nifFarmacia = '5412345678';
+const nifFarmacia = '5401122334';
 
 console.log("========================================");
 console.log(` CHAVES DE ATIVAÇÃO PARA O NIF: ${nifFarmacia}`);

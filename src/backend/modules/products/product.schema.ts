@@ -11,7 +11,10 @@ export const createProductSchema = z.object({
   minStock: z.number().int().nonnegative().default(10),
   categoryId: z.string().uuid('ID de categoria inválido'),
   supplierId: z.string().uuid('ID de fornecedor inválido').optional(),
-  initialStock: z.number().int().nonnegative().optional()
+  initialStock: z.number().int().nonnegative().optional(),
+  // Adicionados para permitir a captação correta do lote inicial opcional:
+  batchNumber: z.string().optional().nullable(),
+  expirationDate: z.string().optional().nullable()
 })
 
 export const updateProductSchema = createProductSchema.partial()

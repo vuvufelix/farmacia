@@ -1071,7 +1071,12 @@
 
   <!-- JavaScript Logic & API Integration -->
   <script>
-    const API_BASE = 'http://localhost:3333/api';
+    // 🌍 Deteção automática para multiutilizador na rede local (LAN)
+    const HOST_IP = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'localhost' 
+      : window.location.hostname;
+
+    const API_BASE = `http://${HOST_IP}:3333/api`;
     let authToken = localStorage.getItem('token') || '';
     let availableProductsData = [];
     let cartItems = [];

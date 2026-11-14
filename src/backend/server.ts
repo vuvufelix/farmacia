@@ -59,9 +59,10 @@ app.use(express.static(path.resolve(__dirname, '../../public')))
 
 export function startServer(port: number): Promise<void> {
   return new Promise((resolve) => {
-    app.listen(port, () => {
-      console.log(`🚀 Servidor local Nenova Tech a rodar em http://localhost:${port}`)
-      resolve()
-    })
-  })
+    // 🌍 Alterado para '0.0.0.0' para permitir acesso dos outros PCs da farmácia via rede local
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`🚀 Servidor local Nenova Tech a rodar na porta ${port} (Acessível na LAN)`);
+      resolve();
+    });
+  });
 }

@@ -9,28 +9,9 @@
   <link rel="icon" type="image/x-icon" href="./gemini-svg.svg">
   <!-- Chart.js Local (100% Offline para os Gráficos) -->
   <script src="./js/chart.js"></script>
-
   <!-- Lucide Icons Local (100% Offline para os Ícones) -->
   <script src="./js/lucide.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            farmGreen: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
-            }
-          }
-        }
-      }
-    }
-  </script>
+
   <style>
   /* ==========================================================
      REGRAS DE IMPRESSÃO SEPARADAS (TALÃO 80mm vs RELATÓRIO A4)
@@ -118,7 +99,9 @@
     }
   }
 
-  /* Cores da marca (farmGreen) */
+  /* ==========================================================
+     CORES DA MARCA & UTILITÁRIOS (LIGHT MODE)
+     ========================================================== */
     .bg-farmGreen-50 { background-color: #f0fdf4 !important; }
     .bg-farmGreen-100 { background-color: #dcfce7 !important; }
     .bg-farmGreen-600 { background-color: #16a34a !important; }
@@ -159,23 +142,152 @@
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
     }
+
+  /* ==========================================================
+     SUPORTE COMPLETO A DARK MODE (COMPATÍVEL COM TAILWIND V2)
+     ========================================================== */
+    html.dark body,
+    html.dark .dark\:bg-gray-900 {
+      background-color: #111827 !important;
+      color: #f3f4f6 !important;
+    }
+
+    html.dark .dark\:bg-gray-800 {
+      background-color: #1f2937 !important;
+    }
+
+    html.dark .dark\:bg-gray-700 {
+      background-color: #374151 !important;
+    }
+
+    html.dark .dark\:bg-gray-700\/50 {
+      background-color: rgba(55, 65, 81, 0.5) !important;
+    }
+
+    html.dark .dark\:bg-gray-700\/20 {
+      background-color: rgba(55, 65, 81, 0.2) !important;
+    }
+
+    /* Sobrescrever fundos claros no modo escuro */
+    html.dark .bg-white { background-color: #1f2937 !important; }
+    html.dark .bg-gray-50 { background-color: #111827 !important; }
+    html.dark .bg-gray-100 { background-color: #374151 !important; }
+
+    /* Textos no modo escuro */
+    html.dark .dark\:text-white,
+    html.dark .text-gray-900 { color: #f9fafb !important; }
+    html.dark .dark\:text-gray-100 { color: #f3f4f6 !important; }
+    html.dark .dark\:text-gray-200,
+    html.dark .text-gray-800 { color: #e5e7eb !important; }
+    html.dark .dark\:text-gray-300,
+    html.dark .text-gray-700 { color: #d1d5db !important; }
+    html.dark .dark\:text-gray-400,
+    html.dark .text-gray-600,
+    html.dark .text-gray-500 { color: #9ca3af !important; }
+
+    /* Bordas e Divisores no modo escuro */
+    html.dark .dark\:border-gray-700,
+    html.dark .border-gray-100,
+    html.dark .border-gray-200,
+    html.dark .border-gray-300 {
+      border-color: #374151 !important;
+    }
+
+    html.dark .dark\:border-gray-600 {
+      border-color: #4b5563 !important;
+    }
+
+    html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #374151 !important;
+    }
+
+    /* Hover no modo escuro */
+    html.dark .dark\:hover\:bg-gray-700:hover,
+    html.dark .hover\:bg-gray-50:hover,
+    html.dark .hover\:bg-gray-100:hover {
+      background-color: #374151 !important;
+    }
+
+    html.dark .dark\:hover\:bg-gray-600:hover,
+    html.dark .hover\:bg-gray-200:hover {
+      background-color: #4b5563 !important;
+    }
+
+    html.dark .dark\:hover\:text-white:hover {
+      color: #ffffff !important;
+    }
+
+    /* Variantes de marca e alertas no modo escuro */
+    html.dark .bg-farmGreen-50,
+    html.dark .dark\:bg-farmGreen-900\/40,
+    html.dark .dark\:bg-farmGreen-900\/50,
+    html.dark .dark\:bg-farmGreen-900\/60 {
+      background-color: rgba(20, 83, 45, 0.45) !important;
+    }
+
+    html.dark .text-farmGreen-700,
+    html.dark .text-farmGreen-800,
+    html.dark .dark\:text-farmGreen-300,
+    html.dark .dark\:text-farmGreen-400 {
+      color: #4ade80 !important;
+    }
+
+    html.dark .border-farmGreen-100,
+    html.dark .dark\:border-farmGreen-800 {
+      border-color: #166534 !important;
+    }
+
+    html.dark .bg-amber-50,
+    html.dark .bg-amber-100,
+    html.dark .dark\:bg-amber-900\/30,
+    html.dark .dark\:bg-amber-900\/40 {
+      background-color: rgba(120, 53, 15, 0.35) !important;
+    }
+
+    html.dark .text-amber-700,
+    html.dark .text-amber-800,
+    html.dark .text-amber-900,
+    html.dark .dark\:text-amber-300,
+    html.dark .dark\:text-amber-400 {
+      color: #fbbf24 !important;
+    }
+
+    html.dark .bg-blue-50,
+    html.dark .dark\:bg-blue-900\/30 {
+      background-color: rgba(30, 58, 138, 0.35) !important;
+    }
+
+    html.dark .text-blue-600,
+    html.dark .text-blue-900,
+    html.dark .dark\:text-blue-300,
+    html.dark .dark\:text-blue-400 {
+      color: #60a5fa !important;
+    }
+
+    html.dark .dark\:bg-red-900\/40 {
+      background-color: rgba(127, 29, 29, 0.4) !important;
+    }
+
+    html.dark .dark\:text-red-400 {
+      color: #f87171 !important;
+    }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
 
   <!-- ================= MODAL PROFISSIONAL ================= -->
   <div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 transform transition-all scale-100">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-gray-700 transform transition-all scale-100">
       <div class="flex items-center space-x-3 mb-4">
-        <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center bg-farmGreen-50 text-farmGreen-600">
+        <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center bg-farmGreen-50 text-farmGreen-600 dark:bg-farmGreen-900/50 dark:text-farmGreen-400">
           <i id="modal-icon" data-lucide="check-circle" class="w-6 h-6"></i>
         </div>
         <div>
-          <h3 id="modal-title" class="text-lg font-bold text-gray-900">Mensagem do Sistema</h3>
-          <p class="text-xs text-gray-500">MedLote OS - Luanda</p>
+          <h3 id="modal-title" class="text-lg font-bold text-gray-900 dark:text-white">Mensagem do Sistema</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">MedLote OS - Luanda</p>
         </div>
       </div>
-      <p id="modal-message" class="text-sm text-gray-600 mb-6 leading-relaxed">Conteúdo da mensagem...</p>
+      <p id="modal-message" class="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">Conteúdo da mensagem...</p>
       <div class="flex justify-end space-x-3">
         <button onclick="closeModal()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition">
           Entendido
@@ -186,33 +298,33 @@
 
   <!-- ================= AUTH VIEW ================= -->
   <div id="auth-view" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-farmGreen-900 to-farmGreen-700 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-farmGreen-100">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-farmGreen-100 dark:border-gray-700">
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-4 shadow-inner">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-farmGreen-100 dark:bg-farmGreen-900/50 text-farmGreen-700 dark:text-farmGreen-400 rounded-full mb-4 shadow-inner">
           <i data-lucide="cross" class="w-8 h-8"></i>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">MedLote OS</h1>
-        <p class="text-sm text-gray-500 mt-1">Sistema de Gestão Farmacêutica Offline (Luanda)</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">MedLote OS</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sistema de Gestão Farmacêutica Offline (Luanda)</p>
       </div>
 
       <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Utilizador</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Utilizador</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
               <i data-lucide="user" class="w-5 h-5"></i>
             </span>
-            <input type="text" id="username" required value="admin" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition">
+            <input type="text" id="username" required value="admin" class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition">
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Palavra-passe</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Palavra-passe</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
               <i data-lucide="lock" class="w-5 h-5"></i>
             </span>
-            <input type="password" id="password" required value="123456" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition">
+            <input type="password" id="password" required value="123456" class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition">
           </div>
         </div>
 
@@ -221,58 +333,58 @@
           <i data-lucide="arrow-right" class="w-5 h-5"></i>
         </button>
       </form>
-      <div id="login-error" class="mt-4 text-center text-sm text-red-600 font-medium hidden"></div>
+      <div id="login-error" class="mt-4 text-center text-sm text-red-600 dark:text-red-400 font-medium hidden"></div>
     </div>
   </div>
 
   <!-- ================= MAIN APP VIEW ================= -->
-  <div id="app-view" class="hidden flex h-screen bg-gray-50 overflow-hidden">
+  <div id="app-view" class="hidden flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
     <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col h-full fixed inset-y-0 left-0 z-30 shadow-sm p-4 space-y-1">
-      <div class="flex items-center space-x-3 px-3 py-4 mb-2 border-b border-gray-100">
+    <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full fixed inset-y-0 left-0 z-30 shadow-sm p-4 space-y-1">
+      <div class="flex items-center space-x-3 px-3 py-4 mb-2 border-b border-gray-100 dark:border-gray-700">
         <div class="w-9 h-9 bg-farmGreen-600 text-white rounded-lg flex items-center justify-center shadow">
           <i data-lucide="activity" class="w-5 h-5"></i>
         </div>
         <div>
-          <span class="font-bold text-base text-gray-900 block leading-tight">MedLote OS</span>
-          <span class="text-[10px] bg-farmGreen-100 text-farmGreen-800 px-2 py-0.5 rounded-full font-medium">Offline Mode</span>
+          <span class="font-bold text-base text-gray-900 dark:text-white block leading-tight">MedLote OS</span>
+          <span class="text-[10px] bg-farmGreen-100 dark:bg-farmGreen-900/60 text-farmGreen-800 dark:text-farmGreen-300 px-2 py-0.5 rounded-full font-medium">Offline Mode</span>
         </div>
       </div>
 
-      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-farmGreen-50 text-farmGreen-700 transition">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-farmGreen-50 dark:bg-farmGreen-900/40 text-farmGreen-700 dark:text-farmGreen-300 transition">
         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
         <span>Dashboard</span>
       </button>
-      <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('inventory')" id="nav-inventory" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="package" class="w-5 h-5"></i>
         <span>Inventário & Lotes</span>
       </button>
-      <button onclick="switchTab('alerts')" id="nav-alerts" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('alerts')" id="nav-alerts" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="alert-triangle" class="w-5 h-5"></i>
         <span>Alertas de Validade</span>
       </button>
-      <button onclick="switchTab('pos')" id="nav-pos" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('pos')" id="nav-pos" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="shopping-cart" class="w-5 h-5"></i>
         <span>PDV / Caixa (AGT)</span>
       </button>
-      <button onclick="switchTab('suppliers')" id="nav-suppliers" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('suppliers')" id="nav-suppliers" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="truck" class="w-5 h-5"></i>
         <span>Fornecedores (Shalina)</span>
       </button>
-      <button onclick="switchTab('returns')" id="nav-returns" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('returns')" id="nav-returns" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
         <span>Trocas & Devoluções</span>
       </button>
-      <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="history" class="w-5 h-5"></i>
         <span>Histórico de Vendas</span>
       </button>
-      <button onclick="switchTab('reports')" id="nav-reports" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition">
+      <button onclick="switchTab('reports')" id="nav-reports" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition">
         <i data-lucide="file-text" class="w-5 h-5"></i>
         <span>Relatórios Fiscais</span>
       </button>
       <!-- Exemplo de item na Sidebar -->
-      <a href="#" onclick="openSupportModal()" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-farmGreen-50 hover:text-farmGreen-700 rounded-xl transition font-medium text-sm">
+      <a href="#" onclick="openSupportModal()" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-farmGreen-50 dark:hover:bg-gray-700 hover:text-farmGreen-700 dark:hover:text-white rounded-xl transition font-medium text-sm">
         <i data-lucide="help-circle" class="w-5 h-5"></i>
         <span>Suporte Técnico</span>
       </a>
@@ -282,21 +394,27 @@
     <div class="flex-1 flex flex-col h-full ml-64 overflow-y-auto">
       
       <!-- Top Navbar -->
-      <header class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
+      <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
         <div class="px-8 h-16 flex items-center justify-between">
           <div class="flex items-center space-x-3">
-            <span class="font-bold text-base text-gray-800">Sistema Integrado de Gestão Farmacêutica</span>
+            <span class="font-bold text-base text-gray-800 dark:text-white">Sistema Integrado de Gestão Farmacêutica</span>
           </div>
 
           <div class="flex items-center space-x-4">
-            <button onclick="openLicenseModal()" id="license-badge" class="flex items-center space-x-2 text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full border border-gray-200 transition cursor-pointer" title="Gerir Licença">
-              <span id="license-dot" class="w-2 h-2 rounded-full bg-green-500"></span>
-              <span id="license-status-text" class="font-medium text-gray-700">Licença Ativa (10.000 Kz/mês)</span>
+            <!-- 🌙 Botão de Alternância de Dark Mode -->
+            <button onclick="toggleDarkMode()" class="p-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition" title="Alternar Modo Escuro / Claro">
+              <i id="theme-icon" data-lucide="moon" class="w-5 h-5"></i>
             </button>
-            <div class="border-l border-gray-200 h-6"></div>
+            <div class="border-l border-gray-200 dark:border-gray-700 h-6"></div>
+
+            <button onclick="openLicenseModal()" id="license-badge" class="flex items-center space-x-2 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-600 transition cursor-pointer" title="Gerir Licença">
+              <span id="license-dot" class="w-2 h-2 rounded-full bg-green-500"></span>
+              <span id="license-status-text" class="font-medium text-gray-700 dark:text-gray-200">Licença Ativa (10.000 Kz/mês)</span>
+            </button>
+            <div class="border-l border-gray-200 dark:border-gray-700 h-6"></div>
             <div class="flex items-center space-x-2">
-              <span id="user-display" class="text-sm font-semibold text-gray-700">Operador</span>
-              <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100 transition" title="Terminar Sessão">
+              <span id="user-display" class="text-sm font-semibold text-gray-700 dark:text-gray-200">Operador</span>
+              <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Terminar Sessão">
                 <i data-lucide="log-out" class="w-5 h-5"></i>
               </button>
             </div>
@@ -310,39 +428,39 @@
         <!-- TAB: DASHBOARD -->
         <section id="tab-dashboard" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-gray-500">Produtos no Catálogo</p>
-                <h3 id="stat-products" class="text-2xl font-bold text-gray-900 mt-1">--</h3>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Produtos no Catálogo</p>
+                <h3 id="stat-products" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">--</h3>
               </div>
-              <div class="w-12 h-12 bg-farmGreen-50 text-farmGreen-600 rounded-xl flex items-center justify-center">
+              <div class="w-12 h-12 bg-farmGreen-50 dark:bg-farmGreen-900/50 text-farmGreen-600 dark:text-farmGreen-400 rounded-xl flex items-center justify-center">
                 <i data-lucide="box" class="w-6 h-6"></i>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-gray-500">Lotes a Vencer (30d)</p>
-                <h3 id="stat-alerts" class="text-2xl font-bold text-amber-600 mt-1">--</h3>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Lotes a Vencer (30d)</p>
+                <h3 id="stat-alerts" class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">--</h3>
               </div>
-              <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+              <div class="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center">
                 <i data-lucide="clock" class="w-6 h-6"></i>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-gray-500">Faturas Emitidas Mês</p>
-                <h3 id="stat-invoices" class="text-2xl font-bold text-gray-900 mt-1">--</h3>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Faturas Emitidas Mês</p>
+                <h3 id="stat-invoices" class="text-2xl font-bold text-gray-900 dark:text-white mt-1">--</h3>
               </div>
-              <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+              <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center">
                 <i data-lucide="receipt" class="w-6 h-6"></i>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <p class="text-sm font-medium text-gray-500">Estado da Licença</p>
-                <h3 class="text-sm font-bold text-farmGreen-700 mt-1 uppercase bg-farmGreen-50 px-2.5 py-1 rounded-md inline-block">Ativa / 10k Kz</h3>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Estado da Licença</p>
+                <h3 class="text-sm font-bold text-farmGreen-700 dark:text-farmGreen-300 mt-1 uppercase bg-farmGreen-50 dark:bg-farmGreen-900/50 px-2.5 py-1 rounded-md inline-block">Ativa / 10k Kz</h3>
               </div>
-              <div class="w-12 h-12 bg-farmGreen-100 text-farmGreen-700 rounded-xl flex items-center justify-center">
+              <div class="w-12 h-12 bg-farmGreen-100 dark:bg-farmGreen-900/60 text-farmGreen-700 dark:text-farmGreen-300 rounded-xl flex items-center justify-center">
                 <i data-lucide="shield-check" class="w-6 h-6"></i>
               </div>
             </div>
@@ -350,8 +468,8 @@
 
           <!-- Charts Section -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h3 class="font-bold text-gray-900 mb-4 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
                 <span>Evolução de Vendas (Kz)</span>
                 <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400"></i>
               </h3>
@@ -359,8 +477,8 @@
                 <canvas id="salesChart"></canvas>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <h3 class="font-bold text-gray-900 mb-4 flex items-center justify-between">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
                 <span>Distribuição de Stock por Categoria</span>
                 <i data-lucide="pie-chart" class="w-5 h-5 text-gray-400"></i>
               </h3>
@@ -374,7 +492,7 @@
         <!-- TAB: INVENTORY -->
         <section id="tab-inventory" class="hidden space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
               <i data-lucide="package" class="w-6 h-6 text-farmGreen-600"></i>
               <span>Gestão de Inventário e Lotes (FEFO)</span>
             </h2>
@@ -384,22 +502,22 @@
                     <span>Novo Produto</span>
                 </button>
 
-                <button onclick="toggleLowStockFilter()" id="btn-filter-lowstock" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
+                <button onclick="toggleLowStockFilter()" id="btn-filter-lowstock" class="bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
                     <i data-lucide="alert-triangle" class="w-4 h-4"></i>
                     <span>Stock Baixo</span>
                 </button>
 
-                <button onclick="loadInventory()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
+                <button onclick="loadInventory()" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     <span>Atualizar</span>
                 </button>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <table class="w-full text-left border-collapse">
                 <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     <th class="p-4">Produto</th>
                     <th class="p-4">Categoria</th>
                     <th class="p-4">Preço Venda</th>
@@ -409,7 +527,7 @@
                     <th class="p-4 text-right">Ações</th>
                 </tr>
                 </thead>
-                <tbody id="inventory-table-body">
+                <tbody id="inventory-table-body" class="divide-y divide-gray-100 dark:divide-gray-700">
                 </tbody>
             </table>
           </div>
@@ -418,7 +536,7 @@
         <!-- TAB: ALERTS -->
         <section id="tab-alerts" class="hidden space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900">Painel de Alertas de Caducidade (30 / 60 / 90 dias)</h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Painel de Alertas de Caducidade (30 / 60 / 90 dias)</h2>
             <button onclick="loadExpirationAlerts()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
               <span>Verificar Validades</span>
@@ -430,52 +548,52 @@
 
         <!-- ================= MODAL DE IMPRESSÃO DO TALÃO INTERNO ================= -->
         <div id="invoice-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 border border-gray-100 flex flex-col items-center font-sans">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm p-5 border border-gray-100 dark:border-gray-700 flex flex-col items-center font-sans">
             
-            <div class="text-center space-y-0.5 mb-3 border-b border-dashed border-gray-300 pb-3 w-full">
-                <div class="inline-flex items-center justify-center w-8 h-8 bg-farmGreen-100 text-farmGreen-700 rounded-full mb-1">
+            <div class="text-center space-y-0.5 mb-3 border-b border-dashed border-gray-300 dark:border-gray-700 pb-3 w-full">
+                <div class="inline-flex items-center justify-center w-8 h-8 bg-farmGreen-100 dark:bg-farmGreen-900/50 text-farmGreen-700 dark:text-farmGreen-400 rounded-full mb-1">
                 <i data-lucide="cross" class="w-4 h-4"></i>
                 </div>
-                <h2 class="font-bold text-gray-900 text-sm tracking-wide">FARMÁCIA MedLote OS</h2>
-                <p class="text-[11px] text-gray-500">NIF: 5412345678 | Luanda - Angola</p>
+                <h2 class="font-bold text-gray-900 dark:text-white text-sm tracking-wide">FARMÁCIA MedLote OS</h2>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">NIF: 5412345678 | Luanda - Angola</p>
                 
-                <div class="bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] uppercase px-2 py-1 rounded my-1">
+                <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700 font-bold text-[10px] uppercase px-2 py-1 rounded my-1">
                   NOTA DE VENDA / ORÇAMENTO INTERNO
                 </div>
 
-                <p class="text-xs font-bold text-gray-800 mt-1 uppercase" id="inv-modal-number">NV FMN2026/0000</p>
+                <p class="text-xs font-bold text-gray-800 dark:text-gray-200 mt-1 uppercase" id="inv-modal-number">NV FMN2026/0000</p>
                 <p class="text-[10px] text-gray-400" id="inv-modal-date">08/11/2026 00:00</p>
             </div>
 
-            <div class="w-full text-xs space-y-2 mb-3 border-b border-dashed border-gray-300 pb-3 max-h-40 overflow-y-auto" id="inv-modal-items">
+            <div class="w-full text-xs space-y-2 mb-3 border-b border-dashed border-gray-300 dark:border-gray-700 pb-3 max-h-40 overflow-y-auto" id="inv-modal-items">
             </div>
 
-            <div class="w-full text-xs space-y-1.5 mb-3 border-b border-dashed border-gray-300 pb-3">
-                <div class="flex justify-between items-center text-gray-600">
+            <div class="w-full text-xs space-y-1.5 mb-3 border-b border-dashed border-gray-300 dark:border-gray-700 pb-3">
+                <div class="flex justify-between items-center text-gray-600 dark:text-gray-400">
                   <span>Subtotal:</span>
-                  <span id="inv-modal-subtotal" class="font-medium text-gray-800">0 Kz</span>
+                  <span id="inv-modal-subtotal" class="font-medium text-gray-800 dark:text-gray-200">0 Kz</span>
                 </div>
-                <div class="flex justify-between items-center text-gray-600">
+                <div class="flex justify-between items-center text-gray-600 dark:text-gray-400">
                   <span>Incidência IVA:</span>
-                  <span id="inv-modal-tax" class="font-medium text-gray-800">0 Kz</span>
+                  <span id="inv-modal-tax" class="font-medium text-gray-800 dark:text-gray-200">0 Kz</span>
                 </div>
-                <div class="flex justify-between items-center font-bold text-gray-900 text-sm pt-1 border-t border-gray-100">
+                <div class="flex justify-between items-center font-bold text-gray-900 dark:text-white text-sm pt-1 border-t border-gray-100 dark:border-gray-700">
                   <span>Total Valor:</span>
-                  <span id="inv-modal-total" class="text-farmGreen-700">0 Kz</span>
+                  <span id="inv-modal-total" class="text-farmGreen-700 dark:text-farmGreen-400">0 Kz</span>
                 </div>
-                <div class="flex justify-between items-center text-[11px] text-gray-500 pt-1">
+                <div class="flex justify-between items-center text-[11px] text-gray-500 dark:text-gray-400 pt-1">
                   <span>Pagamento:</span>
-                  <span id="inv-modal-method" class="font-semibold text-gray-700 uppercase">MULTICAIXA</span>
+                  <span id="inv-modal-method" class="font-semibold text-gray-700 dark:text-gray-300 uppercase">MULTICAIXA</span>
                 </div>
             </div>
 
             <div class="text-center space-y-2 w-full">
-                <div class="bg-gray-100 p-2 rounded-lg text-[9px] text-gray-700 font-semibold border border-gray-200">
+                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg text-[9px] text-gray-700 dark:text-gray-300 font-semibold border border-gray-200 dark:border-gray-600">
                   DOCUMENTO AUXILIAR DE GESTÃO INTERNA<br>NÃO SERVE COMO FATURA FISCAL (SEM VALOR TRIBUTÁRIO)
                 </div>
                 
                 <div class="flex space-x-2 pt-1">
-                <button onclick="printInvoiceTicket()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
+                <button onclick="printInvoiceTicket()" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
                     <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                     <span>Imprimir</span>
                 </button>
@@ -489,37 +607,37 @@
 
         <!-- ================= MODAL DE ATIVAÇÃO DE LICENÇA (MedLote OS) ================= -->
         <div id="license-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
-          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-              <h3 class="font-bold text-gray-900 text-base flex items-center space-x-2">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">
+              <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center space-x-2">
                 <i data-lucide="shield-check" class="w-5 h-5 text-farmGreen-600"></i>
                 <span>Ativação & Renovação de Licença</span>
               </h3>
-              <button onclick="closeLicenseModal()" class="text-gray-400 hover:text-gray-600">
+              <button onclick="closeLicenseModal()" class="text-gray-400 hover:text-gray-200">
                 <i data-lucide="x" class="w-5 h-5"></i>
               </button>
             </div>
 
             <!-- Painel Informativo do Estado da Licença -->
-            <div id="license-status-card" class="bg-farmGreen-50 border border-farmGreen-100 p-4 rounded-xl mb-4 space-y-2">
+            <div id="license-status-card" class="bg-farmGreen-50 dark:bg-farmGreen-900/40 border border-farmGreen-100 dark:border-farmGreen-800 p-4 rounded-xl mb-4 space-y-2">
               <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600">Estado do Sistema:</span>
-                <span id="lic-modal-status-text" class="font-bold text-farmGreen-700 uppercase">A VERIFICAR...</span>
+                <span class="text-gray-600 dark:text-gray-300">Estado do Sistema:</span>
+                <span id="lic-modal-status-text" class="font-bold text-farmGreen-700 dark:text-farmGreen-400 uppercase">A VERIFICAR...</span>
               </div>
               <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600">Válido até:</span>
-                <span id="lic-modal-expiry-date" class="font-mono font-bold text-gray-800">--/--/----</span>
+                <span class="text-gray-600 dark:text-gray-300">Válido até:</span>
+                <span id="lic-modal-expiry-date" class="font-mono font-bold text-gray-800 dark:text-gray-200">--/--/----</span>
               </div>
               <div class="flex justify-between items-center text-xs">
-                <span class="text-gray-600">Dias Restantes:</span>
-                <span id="lic-modal-days-left" class="font-bold text-gray-700">-- dias</span>
+                <span class="text-gray-600 dark:text-gray-300">Dias Restantes:</span>
+                <span id="lic-modal-days-left" class="font-bold text-gray-700 dark:text-gray-300">-- dias</span>
               </div>
             </div>
 
             <!-- Planos de Subscrição -->
-            <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl mb-3 text-[11px] text-gray-600 space-y-1 leading-relaxed">
-              <p class="font-semibold text-gray-800">Planos de Subscrição Disponíveis:</p>
-              <ul class="list-disc list-inside space-y-0.5 text-gray-500">
+            <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl mb-3 text-[11px] text-gray-600 dark:text-gray-300 space-y-1 leading-relaxed">
+              <p class="font-semibold text-gray-800 dark:text-gray-200">Planos de Subscrição Disponíveis:</p>
+              <ul class="list-disc list-inside space-y-0.5 text-gray-500 dark:text-gray-400">
                 <li><strong>1 Mês:</strong> 10.000 Kz</li>
                 <li><strong>3 Meses:</strong> 30.000 Kz</li>
                 <li><strong>6 Meses:</strong> 60.000 Kz</li>
@@ -528,39 +646,39 @@
             </div>
 
             <!-- 💳 NOVOS DADOS DE PAGAMENTO (Angola) -->
-            <div class="bg-blue-50 border border-blue-100 p-3 rounded-xl mb-4 text-[11px] text-blue-900 space-y-2">
-              <p class="font-bold text-blue-900 flex items-center space-x-1">
+            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 p-3 rounded-xl mb-4 text-[11px] text-blue-900 dark:text-blue-200 space-y-2">
+              <p class="font-bold text-blue-900 dark:text-blue-300 flex items-center space-x-1">
                 <i data-lucide="credit-card" class="w-4 h-4"></i>
                 <span>Métodos de Pagamento:</span>
               </p>
               
-              <div class="bg-white p-2 rounded-lg border border-blue-200 space-y-1">
+              <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-blue-200 dark:border-blue-800 space-y-1">
                 <div class="flex justify-between">
-                  <span class="text-gray-500">Entidade:</span>
-                  <span class="font-mono font-bold text-gray-800">10116</span>
+                  <span class="text-gray-500 dark:text-gray-400">Entidade:</span>
+                  <span class="font-mono font-bold text-gray-800 dark:text-gray-200">10116</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-500">Referência:</span>
-                  <span class="font-mono font-bold text-blue-700">929442549</span>
+                  <span class="text-gray-500 dark:text-gray-400">Referência:</span>
+                  <span class="font-mono font-bold text-blue-700 dark:text-blue-400">929442549</span>
                 </div>
               </div>
 
-              <div class="bg-white p-2 rounded-lg border border-blue-200 flex justify-between items-center">
-                <span class="text-gray-500">Multicaixa Express:</span>
-                <span class="font-mono font-bold text-emerald-700">920 000 000</span>
+              <div class="bg-white dark:bg-gray-800 p-2 rounded-lg border border-blue-200 dark:border-blue-800 flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Multicaixa Express:</span>
+                <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400">920 000 000</span>
               </div>
 
-              <p class="text-[10px] text-gray-500 italic text-center">Após o pagamento, envie o comprovativo ao suporte para receber a chave.</p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 italic text-center">Após o pagamento, envie o comprovativo ao suporte para receber a chave.</p>
             </div>
 
             <form id="license-activation-form" onsubmit="submitLicenseKey(event)" class="space-y-4 text-xs">
               <div>
-                <label class="block font-medium text-gray-700 mb-1">Chave de Ativação (License Key)</label>
-                <textarea id="lic-input-key" required rows="4" placeholder="Cole aqui o objeto JSON completo fornecido pelo suporte..." class="w-full border border-gray-300 rounded-lg p-2.5 font-mono text-xs tracking-wide"></textarea>
+                <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Chave de Ativação (License Key)</label>
+                <textarea id="lic-input-key" required rows="4" placeholder="Cole aqui o objeto JSON completo fornecido pelo suporte..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 font-mono text-xs tracking-wide"></textarea>
               </div>
 
-              <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100">
-                <button type="button" onclick="closeLicenseModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition">
+              <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100 dark:border-gray-700">
+                <button type="button" onclick="closeLicenseModal()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                   Fechar
                 </button>
                 <button type="submit" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-xl font-semibold transition shadow flex items-center space-x-1">
@@ -574,47 +692,47 @@
 
         <!-- ================= MODAL DE SUPORTE TÉCNICO ================= -->
         <div id="support-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
-          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-              <h3 class="font-bold text-gray-900 text-base flex items-center space-x-2">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">
+              <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center space-x-2">
                 <i data-lucide="headset" class="w-5 h-5 text-farmGreen-600"></i>
                 <span>Suporte Técnico - Nenova Tech</span>
               </h3>
-              <button onclick="closeSupportModal()" class="text-gray-400 hover:text-gray-600">
+              <button onclick="closeSupportModal()" class="text-gray-400 hover:text-gray-200">
                 <i data-lucide="x" class="w-5 h-5"></i>
               </button>
             </div>
 
-            <p class="text-xs text-gray-600 mb-4 leading-relaxed">
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
               Precisa de ajuda com o <strong>MedLoteOS</strong>, envio de comprovativo de pagamento ou renovação de licença? Entre em contacto com a nossa equipa:
             </p>
 
             <div class="space-y-3 mb-6">
               <!-- WhatsApp / Telefone -->
-              <a href="https://wa.me/244929442549?text=Olá,%20preciso%20de%20suporte%20com%20o%20MedLoteOS" target="_blank" class="flex items-center space-x-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition">
+              <a href="https://wa.me/244929442549?text=Olá,%20preciso%20de%20suporte%20com%20o%20MedLoteOS" target="_blank" class="flex items-center space-x-3 p-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">
                 <div class="bg-emerald-600 text-white p-2 rounded-lg">
                   <i data-lucide="message-square" class="w-5 h-5"></i>
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-emerald-900">WhatsApp / Chamada Direta</span>
-                  <span class="font-mono text-xs text-emerald-700 font-bold">+244 929 442 549</span>
+                  <span class="block text-xs font-semibold text-emerald-900 dark:text-emerald-300">WhatsApp / Chamada Direta</span>
+                  <span class="font-mono text-xs text-emerald-700 dark:text-emerald-400 font-bold">+244 929 442 549</span>
                 </div>
               </a>
 
               <!-- E-mail -->
-              <a href="mailto:nenovatech98@gmail.com?subject=Suporte%20MedLoteOS" class="flex items-center space-x-3 p-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 transition">
+              <a href="mailto:nenovatech98@gmail.com?subject=Suporte%20MedLoteOS" class="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
                 <div class="bg-blue-600 text-white p-2 rounded-lg">
                   <i data-lucide="mail" class="w-5 h-5"></i>
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-blue-900">Correio Eletrónico (E-mail)</span>
-                  <span class="font-mono text-xs text-blue-700 font-bold">nenovatech98@gmail.com</span>
+                  <span class="block text-xs font-semibold text-blue-900 dark:text-blue-300">Correio Eletrónico (E-mail)</span>
+                  <span class="font-mono text-xs text-blue-700 dark:text-blue-400 font-bold">nenovatech98@gmail.com</span>
                 </div>
               </a>
             </div>
 
-            <div class="flex justify-end pt-2 border-t border-gray-100">
-              <button type="button" onclick="closeSupportModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition text-xs">
+            <div class="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
+              <button type="button" onclick="closeSupportModal()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition text-xs">
                 Fechar
               </button>
             </div>
@@ -623,13 +741,13 @@
 
         <!-- ================= MODAL DE CADASTRO DE PRODUTO ================= -->
         <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-gray-100">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-                <h3 class="font-bold text-gray-900 text-base flex items-center space-x-2">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">
+                <h3 class="font-bold text-gray-900 dark:text-white text-base flex items-center space-x-2">
                 <i data-lucide="package-plus" class="w-5 h-5 text-farmGreen-600"></i>
                 <span>Cadastrar Novo Produto</span>
                 </h3>
-                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600">
+                <button onclick="closeProductModal()" class="text-gray-400 dark:text-gray-200">
                 <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -637,25 +755,25 @@
             <form id="product-form" onsubmit="submitNewProduct(event)" class="space-y-4 text-xs">
                 <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Nome do Medicamento / Produto</label>
-                    <input type="text" id="prod-name" required placeholder="Ex: Ibuprofeno 400mg" class="w-full border border-gray-300 rounded-lg p-2.5">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Medicamento / Produto</label>
+                    <input type="text" id="prod-name" required placeholder="Ex: Ibuprofeno 400mg" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Código de Barras (Opcional)</label>
-                    <input type="text" id="prod-code" placeholder="Deixe em branco para gerar auto" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Código de Barras (Opcional)</label>
+                    <input type="text" id="prod-code" placeholder="Deixe em branco para gerar auto" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 font-mono">
                 </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Categoria</label>
-                    <select id="prod-category" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Categoria</label>
+                    <select id="prod-category" required class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                     <option value="">A carregar categorias...</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Fornecedor</label>
-                    <select id="prod-supplier" required class="w-full border border-gray-300 rounded-lg p-2.5 bg-white">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Fornecedor</label>
+                    <select id="prod-supplier" required class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                     <option value="">A carregar fornecedores...</option>
                     </select>
                 </div>
@@ -663,57 +781,54 @@
 
                 <div class="grid grid-cols-3 gap-3">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Preço de Custo (Kz)</label>
-                    <input type="number" step="0.01" id="prod-cost" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg p-2.5">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Preço de Custo (Kz)</label>
+                    <input type="number" step="0.01" id="prod-cost" required placeholder="0.00" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Preço de Venda (Kz)</label>
-                    <input type="number" step="0.01" id="prod-price" required placeholder="0.00" class="w-full border border-gray-300 rounded-lg p-2.5">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Preço de Venda (Kz)</label>
+                    <input type="number" step="0.01" id="prod-price" required placeholder="0.00" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Taxa IVA (ex: 0.14)</label>
-                    <input type="number" step="0.01" id="prod-tax" value="0.14" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Taxa IVA (ex: 0.14)</label>
+                    <input type="number" step="0.01" id="prod-tax" value="0.14" required class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                 </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Origem</label>
-                    <input type="text" id="prod-origin" value="Importado" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Origem</label>
+                    <input type="text" id="prod-origin" value="Importado" required class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                 </div>
                 <div>
-                    <label class="block font-medium text-gray-700 mb-1">Stock Mínimo</label>
-                    <input type="number" id="prod-minstock" value="10" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Stock Mínimo</label>
+                    <input type="number" id="prod-minstock" value="10" required class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                 </div>
                 </div>
 
                 <!-- DENTRO DO MODAL DE CADASTRO DE PRODUTO (#product-modal) -->
-                <div id="initial-batch-container" class="border-t border-gray-100 pt-3 mt-3">
-                  <p class="font-bold text-gray-800 mb-2 flex items-center space-x-1">
+                <div id="initial-batch-container" class="border-t border-gray-100 dark:border-gray-700 pt-3 mt-3">
+                  <p class="font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center space-x-1">
                     <i data-lucide="calendar" class="w-4 h-4 text-farmGreen-600"></i>
                     <span>Lote Inicial do Medicamento (Opcional)</span>
                   </p>
                   <div class="grid grid-cols-3 gap-3">
                     <div>
-                      <label class="block font-medium text-gray-700 mb-1">Número do Lote</label>
-                      <!-- Removido o 'required' para permitir geração automática no backend se vazio -->
-                      <input type="text" id="prod-batch" placeholder="Ex: L-2026-001" class="w-full border border-gray-300 rounded-lg p-2.5 font-mono">
+                      <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Número do Lote</label>
+                      <input type="text" id="prod-batch" placeholder="Ex: L-2026-001" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 font-mono">
                     </div>
                     <div>
-                      <label class="block font-medium text-gray-700 mb-1">Quantidade Inicial</label>
-                      <!-- Removido o 'required' -->
-                      <input type="number" id="prod-qty" placeholder="50" class="w-full border border-gray-300 rounded-lg p-2.5">
+                      <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade Inicial</label>
+                      <input type="number" id="prod-qty" placeholder="50" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                     </div>
                     <div>
-                      <label class="block font-medium text-gray-700 mb-1">Data de Validade</label>
-                      <!-- Removido o 'required' -->
-                      <input type="date" id="prod-expiry" class="w-full border border-gray-300 rounded-lg p-2.5">
+                      <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Validade</label>
+                      <input type="date" id="prod-expiry" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5">
                     </div>
                   </div>
                 </div>
 
-                <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100">
-                <button type="button" onclick="closeProductModal()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition">
+                <div class="pt-2 flex justify-end space-x-2 border-t border-gray-100 dark:border-gray-700">
+                <button type="button" onclick="closeProductModal()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                     Cancelar
                 </button>
                 <button type="submit" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-xl font-semibold transition shadow">
@@ -727,30 +842,29 @@
         <!-- TAB: PDV / SALES -->
         <section id="tab-pos" class="hidden space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+            <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
               <div class="flex items-center justify-between">
-                <h3 class="font-bold text-gray-900 text-lg">Ponto de Venda - PDV (Caixa)</h3>
-                <span id="logged-operator-badge" class="text-xs bg-farmGreen-100 text-farmGreen-800 px-3 py-1 rounded-full font-medium">Caixa Ativo</span>
+                <h3 class="font-bold text-gray-900 dark:text-white text-lg">Ponto de Venda - PDV (Caixa)</h3>
+                <span id="logged-operator-badge" class="text-xs bg-farmGreen-100 dark:bg-farmGreen-900/50 text-farmGreen-800 dark:text-farmGreen-300 px-3 py-1 rounded-full font-medium">Caixa Ativo</span>
               </div>
               
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Método de Pagamento</label>
-                  <select id="pos-payment-method" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Método de Pagamento</label>
+                  <select id="pos-payment-method" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm">
                     <option value="MONEY">Numerário (Dinheiro)</option>
                     <option value="MULTICAIXA" selected>Multicaixa (TPA)</option>
                     <option value="TRANSFER">Transferência Bancária</option>
                   </select>
                 </div>
-                <!-- Altera esta div dentro do grid do PDV -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Documento</label>
-                  <input type="text" disabled value="Nota de Venda / Orçamento Interno (Não Fiscal)" class="w-full bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-sm text-amber-800 font-semibold">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento</label>
+                  <input type="text" disabled value="Nota de Venda / Orçamento Interno (Não Fiscal)" class="w-full bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/50 rounded-lg p-2.5 text-sm text-amber-800 dark:text-amber-300 font-semibold">
                 </div>
               </div>
 
-              <div class="border-t border-gray-100 pt-4 space-y-3">
-                <h4 class="font-semibold text-gray-800 text-sm">Pesquisar e Selecionar Medicamento (FEFO Automático)</h4>
+              <div class="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-3">
+                <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm">Pesquisar e Selecionar Medicamento (FEFO Automático)</h4>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 relative">
                   <div class="md:col-span-2 relative">
@@ -758,15 +872,15 @@
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                         <i data-lucide="search" class="w-4 h-4"></i>
                       </span>
-                      <input type="text" id="pos-product-search" placeholder="Escreva o nome do medicamento para pesquisar..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition" oninput="handlePosSearchInput(this.value)">
+                      <input type="text" id="pos-product-search" placeholder="Escreva o nome do medicamento para pesquisar..." class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-farmGreen-500 focus:border-farmGreen-500 outline-none transition" oninput="handlePosSearchInput(this.value)">
                     </div>
                     
-                    <div id="pos-suggestions-dropdown" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-30 hidden">
+                    <div id="pos-suggestions-dropdown" class="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-y-auto z-30 hidden">
                     </div>
                   </div>
 
                   <div>
-                    <input type="number" id="pos-quantity" min="1" value="1" placeholder="Qtd" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                    <input type="number" id="pos-quantity" min="1" value="1" placeholder="Qtd" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm">
                   </div>
                 </div>
 
@@ -774,7 +888,7 @@
                 <input type="hidden" id="pos-selected-batch-id" value="">
                 <input type="hidden" id="pos-selected-price" value="0">
 
-                <div id="pos-selected-product-info" class="text-xs text-farmGreen-700 font-medium hidden bg-farmGreen-50 p-2.5 rounded-lg border border-farmGreen-100 flex justify-between items-center">
+                <div id="pos-selected-product-info" class="text-xs text-farmGreen-700 dark:text-farmGreen-300 font-medium hidden bg-farmGreen-50 dark:bg-farmGreen-900/40 p-2.5 rounded-lg border border-farmGreen-100 dark:border-farmGreen-800 flex justify-between items-center">
                   <span id="pos-selected-product-name">Nenhum produto selecionado</span>
                   <button type="button" onclick="clearSelectedPosProduct()" class="text-gray-400 hover:text-red-600 font-bold">✕ Limpar</button>
                 </div>
@@ -785,34 +899,33 @@
                 </button>
               </div>
 
-              <div class="border-t border-gray-100 pt-4">
-                <h4 class="font-semibold text-gray-800 text-sm mb-2">Itens Selecionados</h4>
-                <div id="cart-items-list" class="space-y-2 text-sm text-gray-600 bg-gray-50 p-4 rounded-xl min-h-[120px] max-h-[220px] overflow-y-auto">
+              <div class="border-t border-gray-100 dark:border-gray-700 pt-4">
+                <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm mb-2">Itens Selecionados</h4>
+                <div id="cart-items-list" class="space-y-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 p-4 rounded-xl min-h-[120px] max-h-[220px] overflow-y-auto">
                   Nenhum item adicionado.
                 </div>
               </div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between space-y-6">
               <div>
-                <h3 class="font-bold text-gray-900 text-lg mb-4">Resumo da Fatura</h3>
+                <h3 class="font-bold text-gray-900 dark:text-white text-lg mb-4">Resumo da Fatura</h3>
                 <div class="space-y-3 text-sm">
-                  <div class="flex justify-between text-gray-600">
+                  <div class="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>Subtotal:</span>
                     <span id="pos-subtotal">0.00 Kz</span>
                   </div>
-                  <div class="flex justify-between text-gray-600">
+                  <div class="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>IVA (14%):</span>
                     <span id="pos-tax">0.00 Kz</span>
                   </div>
-                  <div class="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900 text-base">
+                  <div class="border-t border-gray-100 dark:border-gray-700 pt-3 flex justify-between font-bold text-gray-900 dark:text-white text-base">
                     <span>Total Líquido:</span>
-                    <span id="pos-total" class="text-farmGreen-600">0.00 Kz</span>
+                    <span id="pos-total" class="text-farmGreen-600 dark:text-farmGreen-400">0.00 Kz</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Altera o botão de submissão do PDV -->
               <button onclick="submitSale()" class="w-full bg-farmGreen-600 hover:bg-farmGreen-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-base">
                 <i data-lucide="printer" class="w-5 h-5"></i>
                 <span>Emitir Nota de Venda (Dar Baixa)</span>
@@ -824,57 +937,57 @@
         <!-- TAB: SUPPLIERS -->
         <section id="tab-suppliers" class="hidden space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900">Automação de Pedidos (Shalina Healthcare & Fornecedores)</h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Automação de Pedidos (Shalina Healthcare & Fornecedores)</h2>
             <button onclick="generateShalinaOrder()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow">
               <i data-lucide="message-square" class="w-4 h-4"></i>
               <span>Gerar Encomenda WhatsApp</span>
             </button>
           </div>
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-            <p class="text-sm text-gray-600">Clique no botão acima para verificar os produtos abaixo do stock mínimo e gerar automaticamente a mensagem formatada para envio direto via WhatsApp para a <strong>Shalina Healthcare</strong>.</p>
-            <div id="supplier-order-result" class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm font-mono text-gray-700 hidden whitespace-pre-line"></div>
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
+            <p class="text-sm text-gray-600 dark:text-gray-300">Clique no botão acima para verificar os produtos abaixo do stock mínimo e gerar automaticamente a mensagem formatada para envio direto via WhatsApp para a <strong>Shalina Healthcare</strong>.</p>
+            <div id="supplier-order-result" class="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-mono text-gray-700 dark:text-gray-300 hidden whitespace-pre-line"></div>
           </div>
         </section>
 
         <!-- TAB: RETURNS -->
         <section id="tab-returns" class="hidden space-y-6">
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-xl mx-auto space-y-4">
-            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 max-w-xl mx-auto space-y-4">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
               <i data-lucide="rotate-ccw" class="w-6 h-6 text-farmGreen-600"></i>
               <span>Processar Troca ou Devolução</span>
             </h2>
-            <p class="text-xs text-gray-500">Insira o número da fatura (ex: FR FMN2026/0001) para carregar os itens e proceder ao reembolso ou troca sem códigos complexos.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Insira o número da fatura (ex: FR FMN2026/0001) para carregar os itens e proceder ao reembolso ou troca sem códigos complexos.</p>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Número da Fatura</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número da Fatura</label>
               <div class="flex space-x-2">
-                <input type="text" id="return-invoice-number" placeholder="Ex: FR FMN2026/0001" class="flex-1 border border-gray-300 rounded-lg p-2.5 text-sm uppercase font-mono">
+                <input type="text" id="return-invoice-number" placeholder="Ex: FR FMN2026/0001" class="flex-1 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm uppercase font-mono">
                 <button onclick="searchSaleByInvoice()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition shadow">
                   Pesquisar Fatura
                 </button>
               </div>
             </div>
 
-            <div id="return-items-container" class="hidden space-y-3 border-t border-gray-100 pt-4">
-              <div class="bg-farmGreen-50 p-3 rounded-xl border border-farmGreen-100 text-xs text-farmGreen-800 flex justify-between items-center">
+            <div id="return-items-container" class="hidden space-y-3 border-t border-gray-100 dark:border-gray-700 pt-4">
+              <div class="bg-farmGreen-50 dark:bg-farmGreen-900/40 p-3 rounded-xl border border-farmGreen-100 dark:border-farmGreen-800 text-xs text-farmGreen-800 dark:text-farmGreen-300 flex justify-between items-center">
                 <span id="return-sale-info">Fatura carregada com sucesso.</span>
                 <span id="return-operator-info" class="font-semibold"></span>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Selecione o Medicamento a Devolver</label>
-                <select id="return-item-select" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Selecione o Medicamento a Devolver</label>
+                <select id="return-item-select" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm">
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Quantidade a Devolver</label>
-                <input type="number" id="return-qty" min="1" value="1" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade a Devolver</label>
+                <input type="number" id="return-qty" min="1" value="1" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm">
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Motivo Padronizado da Troca / Reembolso</label>
-                <select id="return-reason-select" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo Padronizado da Troca / Reembolso</label>
+                <select id="return-reason-select" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm mb-3">
                   <option value="ERRO_DISPENSA">Erro na Dispensa (Produto trocado por engano)</option>
                   <option value="DEFEITO_EMBALAGEM">Defeito ou Embalagem Danificada</option>
                   <option value="REACAO_ADVERSA">Reação Adversa / Intolerância pelo Paciente</option>
@@ -882,8 +995,8 @@
                   <option value="OUTRO">Outro Motivo (Especificar abaixo)</option>
                 </select>
 
-                <label class="block text-xs font-medium text-gray-500 mb-1">Observações Detalhadas (Opcional)</label>
-                <textarea id="return-reason-obs" placeholder="Ex: Cliente trouxe o talão e o selo de inviolabilidade estava intacto..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm" rows="2"></textarea>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Observações Detalhadas (Opcional)</label>
+                <textarea id="return-reason-obs" placeholder="Ex: Cliente trouxe o talão e o selo de inviolabilidade estava intacto..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg p-2.5 text-sm" rows="2"></textarea>
               </div>
 
               <button onclick="submitReturnSmart()" class="w-full bg-farmGreen-600 hover:bg-farmGreen-700 text-white font-semibold py-3 rounded-xl transition shadow flex items-center justify-center space-x-2">
@@ -897,7 +1010,7 @@
         <!-- TAB: HISTORY -->
         <section id="tab-history" class="hidden space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
               <i data-lucide="history" class="w-6 h-6 text-farmGreen-600"></i>
               <span>Histórico de Vendas & Faturas Emitidas</span>
             </h2>
@@ -907,10 +1020,10 @@
             </button>
           </div>
 
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   <th class="p-4">Nº da Fatura</th>
                   <th class="p-4">Data / Hora</th>
                   <th class="p-4">Operador</th>
@@ -919,7 +1032,7 @@
                   <th class="p-4 text-center">Ações</th>
                 </tr>
               </thead>
-              <tbody id="history-table-body" class="divide-y divide-gray-100 text-sm">
+              <tbody id="history-table-body" class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
               </tbody>
             </table>
           </div>
@@ -928,16 +1041,16 @@
         <!-- TAB: REPORTS -->
         <section id="tab-reports" class="hidden space-y-6">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
               <i data-lucide="file-text" class="w-6 h-6 text-farmGreen-600"></i>
               <span>Relatório de Fecho Interno & Controlo de Vendas</span>
             </h2>
             <div class="flex items-center space-x-3">
-              <select id="report-month" class="border border-gray-300 rounded-lg p-2 text-sm bg-white">
+              <select id="report-month" class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg p-2 text-sm">
                 <option value="11" selected>Novembro</option>
                 <option value="12">Dezembro</option>
               </select>
-              <select id="report-year" class="border border-gray-300 rounded-lg p-2 text-sm bg-white">
+              <select id="report-year" class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg p-2 text-sm">
                 <option value="2026" selected>2026</option>
               </select>
               <button onclick="loadMonthlyReport()" class="bg-farmGreen-600 hover:bg-farmGreen-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow flex items-center space-x-2">
@@ -947,8 +1060,8 @@
             </div>
           </div>
 
-          <div id="report-result-container" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-            <p class="text-sm text-gray-500 text-center py-12">Selecione o período e clique em "Gerar Relatório" para visualizar o fecho consolidado de notas de venda e auditoria interna.</p>
+          <div id="report-result-container" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-6">
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-12">Selecione o período e clique em "Gerar Relatório" para visualizar o fecho consolidado de notas de venda e auditoria interna.</p>
           </div>
         </section>
 
@@ -968,6 +1081,41 @@
     let editingProductId = null;
     let salesChartInstance = null;
     let stockChartInstance = null;
+
+    // 🌙 Gestão do Dark Mode
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        updateThemeIcon('sun');
+      } else {
+        document.documentElement.classList.remove('dark');
+        updateThemeIcon('moon');
+      }
+    }
+
+    function toggleDarkMode() {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        updateThemeIcon('moon');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        updateThemeIcon('sun');
+      }
+    }
+
+    function updateThemeIcon(iconName) {
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.setAttribute('data-lucide', iconName);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    }
+
+    // Inicializa o tema assim que o script carrega
+    initTheme();
 
     function checkIsAdmin() {
       const storedRole = localStorage.getItem('userRole') || localStorage.getItem('currentUserRole');
@@ -992,10 +1140,10 @@
       const icon = document.getElementById('modal-icon');
 
       if (isError) {
-        iconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-red-50 text-red-600';
+        iconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400';
         icon.setAttribute('data-lucide', 'alert-circle');
       } else {
-        iconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-farmGreen-50 text-farmGreen-600';
+        iconContainer.className = 'w-12 h-12 rounded-xl flex items-center justify-center bg-farmGreen-50 dark:bg-farmGreen-900/40 text-farmGreen-600 dark:text-farmGreen-400';
         icon.setAttribute('data-lucide', 'check-circle');
       }
 
@@ -1021,12 +1169,12 @@
     function switchTab(tabId) {
       ['dashboard', 'inventory', 'alerts', 'pos', 'suppliers', 'returns', 'reports', 'history'].forEach(t => {
         document.getElementById(`tab-${t}`)?.classList.add('hidden');
-        document.getElementById(`nav-${t}`)?.classList.remove('bg-farmGreen-50', 'text-farmGreen-700');
-        document.getElementById(`nav-${t}`)?.classList.add('text-gray-600', 'hover:bg-gray-50');
+        document.getElementById(`nav-${t}`)?.classList.remove('bg-farmGreen-50', 'dark:bg-farmGreen-900/40', 'text-farmGreen-700', 'dark:text-farmGreen-300');
+        document.getElementById(`nav-${t}`)?.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-50', 'dark:hover:bg-gray-700');
       });
       document.getElementById(`tab-${tabId}`)?.classList.remove('hidden');
-      document.getElementById(`nav-${tabId}`)?.classList.add('bg-farmGreen-50', 'text-farmGreen-700');
-      document.getElementById(`nav-${tabId}`)?.classList.remove('text-gray-600', 'hover:bg-gray-50');
+      document.getElementById(`nav-${tabId}`)?.classList.add('bg-farmGreen-50', 'dark:bg-farmGreen-900/40', 'text-farmGreen-700', 'dark:text-farmGreen-300');
+      document.getElementById(`nav-${tabId}`)?.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-50', 'dark:hover:bg-gray-700');
 
       if (tabId === 'dashboard') loadDashboardData();
       if (tabId === 'inventory') loadInventory();
@@ -1139,11 +1287,11 @@
 
       if (btn) {
         if (onlyLowStockActive) {
-          btn.classList.remove('bg-amber-50', 'text-amber-700', 'border-amber-200');
+          btn.classList.remove('bg-amber-50', 'dark:bg-amber-900/30', 'text-amber-700', 'dark:text-amber-400', 'border-amber-200', 'dark:border-amber-700/50');
           btn.classList.add('bg-amber-600', 'text-white', 'border-amber-600', 'shadow-sm');
         } else {
           btn.classList.remove('bg-amber-600', 'text-white', 'border-amber-600', 'shadow-sm');
-          btn.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
+          btn.classList.add('bg-amber-50', 'dark:bg-amber-900/30', 'text-amber-700', 'dark:text-amber-400', 'border-amber-200', 'dark:border-amber-700/50');
         }
       }
       applyCurrentInventoryFilter();
@@ -1175,7 +1323,6 @@
       const isAdmin = checkIsAdmin();
 
       products.forEach(p => {
-        // Proteção segura caso batches venha vazio ou nulo
         const batches = Array.isArray(p.batches) ? p.batches : [];
         const activeBatch = batches.length > 0 ? batches[0] : null;
         const totalStock = batches.reduce((acc, b) => acc + (b.quantity || 0), 0);
@@ -1197,29 +1344,29 @@
         const sellingPrice = Number(p.sellingPrice || 0);
 
         tbody.innerHTML += `
-          <tr class="hover:bg-gray-50/50 transition text-xs ${totalStock === 0 ? 'bg-red-50/30' : (isLowStock ? 'bg-amber-50/40' : '')}">
+          <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/40 transition text-xs ${totalStock === 0 ? 'bg-red-50/30 dark:bg-red-900/20' : (isLowStock ? 'bg-amber-50/40 dark:bg-amber-900/20' : '')}">
             <td class="p-4">
-              <p class="font-bold text-gray-900 text-sm">${p.name || 'Produto sem nome'}</p>
-              <p class="text-gray-400 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
+              <p class="font-bold text-gray-900 dark:text-white text-sm">${p.name || 'Produto sem nome'}</p>
+              <p class="text-gray-400 dark:text-gray-500 font-mono">Cód: ${p.code || 'Gerado Auto'}</p>
             </td>
-            <td class="p-4 text-gray-600">${categoryName}</td>
-            <td class="p-4 font-bold text-farmGreen-700">${sellingPrice.toLocaleString('pt-AO')} Kz</td>
-            <td class="p-4 font-mono text-gray-700">${batchNumber}</td>
-            <td class="p-4 text-gray-600">${expiryDate}</td>
+            <td class="p-4 text-gray-600 dark:text-gray-300">${categoryName}</td>
+            <td class="p-4 font-bold text-farmGreen-700 dark:text-farmGreen-400">${sellingPrice.toLocaleString('pt-AO')} Kz</td>
+            <td class="p-4 font-mono text-gray-700 dark:text-gray-300">${batchNumber}</td>
+            <td class="p-4 text-gray-600 dark:text-gray-300">${expiryDate}</td>
             <td class="p-4">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold ${totalStock === 0 ? 'bg-red-100 text-red-800' : (isLowStock ? 'bg-amber-100 text-amber-800' : 'text-gray-900')}">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold ${totalStock === 0 ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : (isLowStock ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300' : 'text-gray-900 dark:text-gray-100')}">
                 ${totalStock} un ${totalStock === 0 ? '(Esgotado)' : (isLowStock ? '(Baixo)' : '')}
               </span>
             </td>
             <td class="p-4 text-right space-x-1">
               ${isAdmin ? `
-                <button onclick="openEditProductModal('${p.id}')" class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Produto">
+                <button onclick="openEditProductModal('${p.id}')" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition" title="Editar Produto">
                   <i data-lucide="edit-3" class="w-4 h-4"></i>
                 </button>
-                <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition" title="Eliminar Produto">
+                <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-gray-700 transition" title="Eliminar Produto">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
-              ` : `<span class="text-gray-300">-</span>`}
+              ` : `<span class="text-gray-300 dark:text-gray-600">-</span>`}
             </td>
           </tr>
         `;
@@ -1246,14 +1393,14 @@
         const renderList = (items) => {
           if (items.length === 0) return `<p class="text-xs text-gray-400 italic mt-2">Nenhum lote nesta faixa.</p>`;
           return `
-            <ul class="mt-3 space-y-2 border-t border-gray-100 pt-2 max-h-36 overflow-y-auto">
+            <ul class="mt-3 space-y-2 border-t border-gray-100 dark:border-gray-700 pt-2 max-h-36 overflow-y-auto">
               ${items.map(b => `
-                <li class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded-lg">
+                <li class="flex justify-between items-center text-xs bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
                   <div>
-                    <span class="font-bold text-gray-800 block">${b.product?.name || 'Medicamento'}</span>
-                    <span class="font-mono text-gray-500 text-[10px]">Lote: ${b.batchNumber} | Qtd: ${b.quantity} un</span>
+                    <span class="font-bold text-gray-800 dark:text-gray-200 block">${b.product?.name || 'Medicamento'}</span>
+                    <span class="font-mono text-gray-500 dark:text-gray-400 text-[10px]">Lote: ${b.batchNumber} | Qtd: ${b.quantity} un</span>
                   </div>
-                  <span class="font-semibold text-gray-700">${new Date(b.expirationDate).toLocaleDateString('pt-AO')}</span>
+                  <span class="font-semibold text-gray-700 dark:text-gray-300">${new Date(b.expirationDate).toLocaleDateString('pt-AO')}</span>
                 </li>
               `).join('')}
             </ul>
@@ -1261,26 +1408,26 @@
         };
         
         container.innerHTML = `
-          <div class="bg-white p-5 rounded-2xl border border-red-100 shadow-sm">
+          <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-red-100 dark:border-red-900/50 shadow-sm">
             <div class="flex justify-between items-center mb-2">
-              <h4 class="font-bold text-red-600 flex items-center space-x-2"><i data-lucide="alert-octagon" class="w-5 h-5"></i><span>Expirados / Crítico</span></h4>
-              <p class="text-2xl font-bold text-gray-900">${expiredList.length}</p>
+              <h4 class="font-bold text-red-600 dark:text-red-400 flex items-center space-x-2"><i data-lucide="alert-octagon" class="w-5 h-5"></i><span>Expirados / Crítico</span></h4>
+              <p class="text-2xl font-bold text-gray-900 dark:text-white">${expiredList.length}</p>
             </div>
             ${renderList(expiredList)}
           </div>
           
-          <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
+          <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-amber-100 dark:border-amber-900/50 shadow-sm">
             <div class="flex justify-between items-center mb-2">
-              <h4 class="font-bold text-amber-600 flex items-center space-x-2"><i data-lucide="clock" class="w-5 h-5"></i><span>Próximos 30 Dias</span></h4>
-              <p class="text-2xl font-bold text-gray-900">${alert30List.length}</p>
+              <h4 class="font-bold text-amber-600 dark:text-amber-400 flex items-center space-x-2"><i data-lucide="clock" class="w-5 h-5"></i><span>Próximos 30 Dias</span></h4>
+              <p class="text-2xl font-bold text-gray-900 dark:text-white">${alert30List.length}</p>
             </div>
             ${renderList(alert30List)}
           </div>
           
-          <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+          <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/50 shadow-sm">
             <div class="flex justify-between items-center mb-2">
-              <h4 class="font-bold text-blue-600 flex items-center space-x-2"><i data-lucide="calendar" class="w-5 h-5"></i><span>Próximos 60-90 Dias</span></h4>
-              <p class="text-2xl font-bold text-gray-900">${alert60_90List.length}</p>
+              <h4 class="font-bold text-blue-600 dark:text-blue-400 flex items-center space-x-2"><i data-lucide="calendar" class="w-5 h-5"></i><span>Próximos 60-90 Dias</span></h4>
+              <p class="text-2xl font-bold text-gray-900 dark:text-white">${alert60_90List.length}</p>
             </div>
             ${renderList(alert60_90List)}
           </div>
@@ -1332,14 +1479,14 @@
 
         return `
           <div onclick="selectPosProduct('${p.id}', '${safeName}', ${price}, '${batchId}', ${stockQty})" 
-               class="p-3 hover:bg-farmGreen-50 cursor-pointer border-b border-gray-100 text-xs flex justify-between items-center transition">
+               class="p-3 hover:bg-farmGreen-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 text-xs flex justify-between items-center transition">
             <div>
-              <p class="font-bold text-gray-900">${p.name}</p>
-              <p class="text-gray-400 font-mono text-[10px]">Cód: ${p.code || 'N/D'} | Lote: ${batch ? batch.batchNumber : 'Sem Lote'}</p>
+              <p class="font-bold text-gray-900 dark:text-white">${p.name}</p>
+              <p class="text-gray-400 dark:text-gray-500 font-mono text-[10px]">Cód: ${p.code || 'N/D'} | Lote: ${batch ? batch.batchNumber : 'Sem Lote'}</p>
             </div>
             <div class="text-right">
-              <span class="font-bold text-farmGreen-700 block">${price.toLocaleString('pt-AO')} Kz</span>
-              <span class="text-[10px] ${stockQty === 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}">Stock: ${stockQty} un</span>
+              <span class="font-bold text-farmGreen-700 dark:text-farmGreen-400 block">${price.toLocaleString('pt-AO')} Kz</span>
+              <span class="text-[10px] ${stockQty === 0 ? 'text-red-500 font-semibold' : 'text-gray-500 dark:text-gray-400'}">Stock: ${stockQty} un</span>
             </div>
           </div>
         `;
@@ -1418,13 +1565,13 @@
         taxSum += itemTax;
 
         return `
-          <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex justify-between items-center bg-white dark:bg-gray-800 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
             <div>
-              <span class="font-semibold text-gray-900">${item.productName}</span>
-              <div class="text-xs text-gray-500">Qtd: ${item.quantity} x ${item.unitPrice.toLocaleString('pt-AO')} Kz</div>
+              <span class="font-semibold text-gray-900 dark:text-white">${item.productName}</span>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Qtd: ${item.quantity} x ${item.unitPrice.toLocaleString('pt-AO')} Kz</div>
             </div>
             <div class="flex items-center space-x-3">
-              <span class="font-bold text-gray-800">${itemTotal.toLocaleString('pt-AO')} Kz</span>
+              <span class="font-bold text-gray-800 dark:text-gray-200">${itemTotal.toLocaleString('pt-AO')} Kz</span>
               <button onclick="cartItems.splice(${idx},1);renderCart();" class="text-red-500 hover:text-red-700 p-1">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
@@ -1498,10 +1645,10 @@
           itemsContainer.innerHTML += `
             <div class="flex justify-between items-center text-xs py-0.5">
               <div>
-                <p class="font-semibold text-gray-800">${prodName}</p>
+                <p class="font-semibold text-gray-800 dark:text-gray-200">${prodName}</p>
                 <p class="text-[10px] text-gray-400">${item.quantity}x ${item.unitPrice.toLocaleString('pt-AO')} Kz</p>
               </div>
-              <span class="font-bold text-gray-900">${itemTotal.toLocaleString('pt-AO')} Kz</span>
+              <span class="font-bold text-gray-900 dark:text-white">${itemTotal.toLocaleString('pt-AO')} Kz</span>
             </div>
           `;
         });
@@ -1547,7 +1694,7 @@
           return;
         }
 
-        let outputHtml = `<p class="font-bold text-farmGreen-800 mb-2">✅ Encomenda Pronta para Envio:</p>`;
+        let outputHtml = `<p class="font-bold text-farmGreen-800 dark:text-farmGreen-400 mb-2">✅ Encomenda Pronta para Envio:</p>`;
         outputHtml += `<p class="whitespace-pre-line mb-3">${data.whatsappMessage || ''}</p>`;
         
         if (data.whatsappUrl) {
@@ -1584,12 +1731,12 @@
         if (data.salesByOperator) {
           for (const [opName, info] of Object.entries(data.salesByOperator)) {
             operatorsHtml += `
-              <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex justify-between items-center">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <div>
-                  <span class="font-bold text-gray-900">${opName}</span>
-                  <p class="text-xs text-gray-500">Faturas emitidas: ${info.count}</p>
+                  <span class="font-bold text-gray-900 dark:text-white">${opName}</span>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Faturas emitidas: ${info.count}</p>
                 </div>
-                <span class="font-bold text-farmGreen-700">${info.total.toLocaleString('pt-AO')} Kz</span>
+                <span class="font-bold text-farmGreen-700 dark:text-farmGreen-400">${info.total.toLocaleString('pt-AO')} Kz</span>
               </div>
             `;
           }
@@ -1604,31 +1751,31 @@
             sale.items.forEach(item => {
               const prodName = item.product ? item.product.name : 'Produto';
               itemsRows += `
-                <tr class="text-xs border-b border-gray-100 bg-gray-50/50">
-                  <td class="p-2.5 font-medium text-gray-800">${prodName}</td>
+                <tr class="text-xs border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/20">
+                  <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">${prodName}</td>
                   <td class="p-2.5 text-center">${item.quantity} un</td>
                   <td class="p-2.5 text-right">${item.unitPrice.toLocaleString('pt-AO')} Kz</td>
-                  <td class="p-2.5 text-right text-blue-600">${(item.taxAmount || 0).toLocaleString('pt-AO')} Kz (14%)</td>
-                  <td class="p-2.5 text-right font-bold text-gray-900">${item.total.toLocaleString('pt-AO')} Kz</td>
+                  <td class="p-2.5 text-right text-blue-600 dark:text-blue-400">${(item.taxAmount || 0).toLocaleString('pt-AO')} Kz (14%)</td>
+                  <td class="p-2.5 text-right font-bold text-gray-900 dark:text-white">${item.total.toLocaleString('pt-AO')} Kz</td>
                 </tr>
               `;
             });
 
             detailsHtml += `
-              <div class="border border-gray-200 rounded-xl overflow-hidden mb-4 shadow-sm">
-                <div class="bg-gray-100 p-3.5 flex justify-between items-center text-xs font-semibold text-gray-700">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mb-4 shadow-sm">
+                <div class="bg-gray-100 dark:bg-gray-700 p-3.5 flex justify-between items-center text-xs font-semibold text-gray-700 dark:text-gray-200">
                   <div>
-                    <span class="font-mono font-bold text-farmGreen-800 text-sm">${sale.invoiceNumber}</span>
-                    <span class="ml-3 text-gray-500">${dateStr}</span>
+                    <span class="font-mono font-bold text-farmGreen-800 dark:text-farmGreen-300 text-sm">${sale.invoiceNumber}</span>
+                    <span class="ml-3 text-gray-500 dark:text-gray-400">${dateStr}</span>
                   </div>
                   <div>
-                    <span class="bg-white px-2.5 py-1 rounded border border-gray-200 font-medium">Operador: ${sale.user ? sale.user.name : 'N/D'}</span>
-                    <span class="ml-2 bg-farmGreen-100 text-farmGreen-800 px-2.5 py-1 rounded">Total: ${sale.total.toLocaleString('pt-AO')} Kz</span>
+                    <span class="bg-white dark:bg-gray-800 px-2.5 py-1 rounded border border-gray-200 dark:border-gray-600 font-medium">Operador: ${sale.user ? sale.user.name : 'N/D'}</span>
+                    <span class="ml-2 bg-farmGreen-100 dark:bg-farmGreen-900/60 text-farmGreen-800 dark:text-farmGreen-300 px-2.5 py-1 rounded">Total: ${sale.total.toLocaleString('pt-AO')} Kz</span>
                   </div>
                 </div>
                 <table class="w-full text-left">
                   <thead>
-                    <tr class="text-[11px] font-bold text-gray-400 uppercase bg-gray-50 border-b border-gray-200">
+                    <tr class="text-[11px] font-bold text-gray-400 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                       <th class="p-2.5">Medicamento / Artigo</th>
                       <th class="p-2.5 text-center">Qtd</th>
                       <th class="p-2.5 text-right">Preço Unit.</th>
@@ -1654,12 +1801,12 @@
             const prodName = ret.saleItem && ret.saleItem.product ? ret.saleItem.product.name : 'Produto';
             
             returnsHtml += `
-              <tr class="text-xs border-b border-gray-100 bg-amber-50/30">
-                <td class="p-2.5 font-mono font-bold text-amber-800">${ret.sale ? ret.sale.invoiceNumber : 'N/D'}</td>
-                <td class="p-2.5 text-gray-600">${dateStr}</td>
-                <td class="p-2.5 font-medium text-gray-800">${prodName} (${ret.quantity} un)</td>
-                <td class="p-2.5 font-mono text-gray-700">${ret.reason}</td>
-                <td class="p-2.5 text-right font-bold text-red-600">-${(ret.refundAmount || 0).toLocaleString('pt-AO')} Kz</td>
+              <tr class="text-xs border-b border-gray-100 dark:border-gray-700 bg-amber-50/30 dark:bg-amber-900/10">
+                <td class="p-2.5 font-mono font-bold text-amber-800 dark:text-amber-400">${ret.sale ? ret.sale.invoiceNumber : 'N/D'}</td>
+                <td class="p-2.5 text-gray-600 dark:text-gray-400">${dateStr}</td>
+                <td class="p-2.5 font-medium text-gray-800 dark:text-gray-200">${prodName} (${ret.quantity} un)</td>
+                <td class="p-2.5 font-mono text-gray-700 dark:text-gray-300">${ret.reason}</td>
+                <td class="p-2.5 text-right font-bold text-red-600 dark:text-red-400">-${(ret.refundAmount || 0).toLocaleString('pt-AO')} Kz</td>
               </tr>
             `;
           });
@@ -1668,53 +1815,53 @@
         }
 
         container.innerHTML = `
-          <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+          <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4">
             <div>
-              <h3 class="font-bold text-gray-900 text-lg">Fecho Consolidado de Notas de Venda — Período: ${data.period}</h3>
-              <p class="text-xs text-gray-500">MedLote OS — Módulo de Controlo Interno (Não Fiscal)</p>
+              <h3 class="font-bold text-gray-900 dark:text-white text-lg">Fecho Consolidado de Notas de Venda — Período: ${data.period}</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">MedLote OS — Módulo de Controlo Interno (Não Fiscal)</p>
             </div>
-            <button onclick="printFiscalReport()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
+            <button onclick="printFiscalReport()" class="bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow">
               <i data-lucide="printer" class="w-4 h-4"></i>
               <span>Imprimir Relatório de Gestão</span>
             </button>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <p class="text-xs text-gray-500 font-medium">Total de Faturas Emitidas</p>
-              <h4 class="text-2xl font-bold text-gray-900 mt-1">${data.totalInvoices}</h4>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total de Faturas Emitidas</p>
+              <h4 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">${data.totalInvoices}</h4>
             </div>
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <p class="text-xs text-gray-500 font-medium">Receita Bruta Total</p>
-              <h4 class="text-2xl font-bold text-farmGreen-700 mt-1">${(data.totalRevenue || 0).toLocaleString('pt-AO')} Kz</h4>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Receita Bruta Total</p>
+              <h4 class="text-2xl font-bold text-farmGreen-700 dark:text-farmGreen-400 mt-1">${(data.totalRevenue || 0).toLocaleString('pt-AO')} Kz</h4>
             </div>
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <p class="text-xs text-gray-500 font-medium">Total de IVA Recolhido (14%)</p>
-              <h4 class="text-2xl font-bold text-blue-600 mt-1">${(data.totalTaxCollected || 0).toLocaleString('pt-AO')} Kz</h4>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total de IVA Recolhido (14%)</p>
+              <h4 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">${(data.totalTaxCollected || 0).toLocaleString('pt-AO')} Kz</h4>
             </div>
           </div>
 
           <div>
-            <h4 class="font-bold text-gray-900 text-sm mb-3">Desempenho por Operador de Caixa</h4>
+            <h4 class="font-bold text-gray-900 dark:text-white text-sm mb-3">Desempenho por Operador de Caixa</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               ${operatorsHtml}
             </div>
           </div>
 
           <div class="pt-2">
-            <h4 class="font-bold text-gray-900 text-sm mb-3">Detalhe das Transações e Itens Faturados</h4>
+            <h4 class="font-bold text-gray-900 dark:text-white text-sm mb-3">Detalhe das Transações e Itens Faturados</h4>
             ${detailsHtml}
           </div>
 
-          <div class="pt-6 border-t border-gray-200">
-            <h4 class="font-bold text-gray-900 text-sm mb-3 flex items-center space-x-2">
+          <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h4 class="font-bold text-gray-900 dark:text-white text-sm mb-3 flex items-center space-x-2">
               <i data-lucide="rotate-ccw" class="w-4 h-4 text-amber-600"></i>
               <span>Auditoria de Devoluções & Motivos Fiscais</span>
             </h4>
-            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
               <table class="w-full text-left">
                 <thead>
-                  <tr class="text-[11px] font-bold text-gray-400 uppercase bg-gray-50 border-b border-gray-200">
+                  <tr class="text-[11px] font-bold text-gray-400 uppercase bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                     <th class="p-2.5">Fatura Origem</th>
                     <th class="p-2.5">Data/Hora</th>
                     <th class="p-2.5">Artigo Devolvido</th>
@@ -1751,6 +1898,10 @@
         salesDataValues = [0];
       }
 
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f3f4f6';
+      const textColor = isDark ? '#9ca3af' : '#4b5563';
+
       const ctxSales = document.getElementById('salesChart').getContext('2d');
       if (salesChartInstance) salesChartInstance.destroy();
 
@@ -1774,8 +1925,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-            x: { grid: { display: false } }
+            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+            x: { grid: { display: false }, ticks: { color: textColor } }
           }
         }
       });
@@ -1803,7 +1954,7 @@
             data: catData.length > 0 ? catData : [1],
             backgroundColor: bgColors.slice(0, catLabels.length || 1),
             borderWidth: 2,
-            borderColor: '#ffffff'
+            borderColor: isDark ? '#1f2937' : '#ffffff'
           }]
         },
         options: { 
@@ -1812,7 +1963,7 @@
           plugins: {
             legend: {
               position: 'bottom',
-              labels: { boxWidth: 12, font: { size: 11 } }
+              labels: { boxWidth: 12, font: { size: 11 }, color: textColor }
             }
           }
         }
@@ -1877,13 +2028,9 @@
       const saleItemId = saleItemSelect.value;
       const quantity = parseInt(document.getElementById('return-qty').value) || 1;
       
-      // Capturar o elemento select do motivo para extrair o texto legível
       const reasonSelect = document.getElementById('return-reason-select');
       const selectedOptionText = reasonSelect.options[reasonSelect.selectedIndex].text;
-      
       const reasonObs = document.getElementById('return-reason-obs').value.trim();
-      
-      // Montar a string de motivo legível para a auditoria fiscal
       const reason = reasonObs ? `${selectedOptionText} - Obs: ${reasonObs}` : selectedOptionText;
 
       if (!saleItemId) {
@@ -1953,15 +2100,15 @@
           const operatorName = s.user ? s.user.name : 'Operador';
           
           tbody.innerHTML += `
-            <tr class="hover:bg-gray-50 transition">
-              <td class="p-4 font-mono font-bold text-farmGreen-800">${s.invoiceNumber}</td>
-              <td class="p-4 text-gray-600 text-xs">${dateStr}</td>
-              <td class="p-4 text-gray-800">${operatorName}</td>
-              <td class="p-4"><span class="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">${s.paymentMethod}</span></td>
-              <td class="p-4 font-bold text-gray-900">${s.total.toLocaleString('pt-AO')} Kz</td>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition">
+              <td class="p-4 font-mono font-bold text-farmGreen-800 dark:text-farmGreen-400">${s.invoiceNumber}</td>
+              <td class="p-4 text-gray-600 dark:text-gray-400 text-xs">${dateStr}</td>
+              <td class="p-4 text-gray-800 dark:text-gray-200">${operatorName}</td>
+              <td class="p-4"><span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-md text-xs font-medium">${s.paymentMethod}</span></td>
+              <td class="p-4 font-bold text-gray-900 dark:text-white">${s.total.toLocaleString('pt-AO')} Kz</td>
               <td class="p-4 text-center">
                 ${userRole !== 'ACCOUNTANT' ? `
-                  <button onclick="selectForReturn('${s.invoiceNumber}')" class="bg-farmGreen-50 hover:bg-farmGreen-100 text-farmGreen-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition" title="Ir para Devoluções com esta Fatura">
+                  <button onclick="selectForReturn('${s.invoiceNumber}')" class="bg-farmGreen-50 dark:bg-farmGreen-900/40 hover:bg-farmGreen-100 dark:hover:bg-farmGreen-900/60 text-farmGreen-700 dark:text-farmGreen-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition" title="Ir para Devoluções com esta Fatura">
                     Reembolsar / Trocar
                   </button>
                 ` : `
@@ -1984,12 +2131,11 @@
     }
 
     async function openProductModal() {
-      editingProductId = null; // Garante que é criação nova
+      editingProductId = null;
 
       const form = document.getElementById('product-form');
       if (form) form.reset();
 
-      // Limpa explicitamente para evitar valores em cache
       document.getElementById('prod-batch').value = '';
       document.getElementById('prod-qty').value = '';
       document.getElementById('prod-expiry').value = '';
@@ -2039,7 +2185,6 @@
 
       let formattedExpiration = undefined;
       if (expiryInput) {
-        // Garante formato UTC consistente para evitar problemas de fuso horário
         formattedExpiration = new Date(`${expiryInput}T12:00:00.000Z`).toISOString();
       }
 
@@ -2112,7 +2257,6 @@
         const decodedPayload = JSON.parse(atob(payloadBase64));
         const userRole = (decodedPayload.role || '').toUpperCase();
 
-        // Elementos do menu lateral para ocultar do Contabilista
         const navInventory = document.getElementById('nav-inventory');
         const navPos = document.getElementById('nav-pos');
         const navSuppliers = document.getElementById('nav-suppliers');
@@ -2124,14 +2268,12 @@
           if (navSuppliers) navSuppliers.style.display = 'none';
           if (navReturns) navReturns.style.display = 'none';
 
-          // Se o contabilista estiver numa aba proibida, redireciona para o dashboard
           const activeTab = document.querySelector('section:not(.hidden)')?.id;
           if (['tab-inventory', 'tab-pos', 'tab-suppliers', 'tab-returns'].includes(activeTab)) {
             switchTab('dashboard');
           }
         }
 
-        // Permissão do botão de novo produto para ADMIN
         const btnNovoProduto = document.querySelector('button[onclick="openProductModal()"]');
         if (btnNovoProduto) {
           if (decodedPayload.role !== 'ADMIN') {
@@ -2154,14 +2296,14 @@
         modalEl.id = 'custom-confirm-modal';
         modalEl.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
         modalEl.innerHTML = `
-          <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 transform transition-all animate-in fade-in zoom-in-95">
-            <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 dark:border-gray-700 transform transition-all animate-in fade-in zoom-in-95">
+            <div class="w-12 h-12 bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Eliminar Produto</h3>
-            <p class="text-sm text-gray-500 text-center mb-6">Tem a certeza de que deseja eliminar este produto e todos os seus lotes associados? Esta ação é irreversível.</p>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">Eliminar Produto</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">Tem a certeza de que deseja eliminar este produto e todos os seus lotes associados? Esta ação é irreversível.</p>
             <div class="flex space-x-3">
-              <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold transition">
+              <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-2.5 rounded-xl text-sm font-semibold transition">
                 Cancelar
               </button>
               <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-semibold transition shadow-sm">
@@ -2238,9 +2380,7 @@
       document.getElementById('prod-origin').value = product.origin || 'Importado';
       document.getElementById('prod-minstock').value = product.minStock || 10;
 
-      // CORREÇÃO CRUCIAL: Garantir que apanhamos o lote correto do produto selecionado
       const batches = Array.isArray(product.batches) ? product.batches : [];
-      // Se houver lotes, pega o primeiro. Se não, deixa vazio para não puxar lixo de outro produto.
       const activeBatch = batches.length > 0 ? batches[0] : null;
       
       const batchInput = document.getElementById('prod-batch');
@@ -2252,7 +2392,6 @@
         if (qtyInput) qtyInput.value = activeBatch.quantity || 0;
         
         if (expiryInput && activeBatch.expirationDate) {
-          // Formata corretamente para o input type="date" (YYYY-MM-DD)
           const dateOnly = activeBatch.expirationDate.split('T')[0];
           expiryInput.value = dateOnly;
         }
@@ -2280,7 +2419,6 @@
       }, 3500);
     }
 
-    // Abrir e carregar dados da licença
     async function openLicenseModal() {
       document.getElementById('license-modal').classList.remove('hidden');
       await refreshLicenseStatus();
@@ -2291,7 +2429,6 @@
       document.getElementById('license-modal').classList.add('hidden');
     }
 
-    // Consultar o estado atual da licença no backend
     async function refreshLicenseStatus() {
       try {
         const res = await fetch(`${API_BASE}/license/status`, {
@@ -2318,15 +2455,15 @@
             if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-green-500';
 
             modalStatusText.textContent = 'SISTEMA ATIVO & REGULAR';
-            modalStatusText.className = 'font-bold text-farmGreen-700 uppercase';
-            modalCard.className = 'bg-farmGreen-50 border border-farmGreen-100 p-4 rounded-xl mb-4 space-y-2';
+            modalStatusText.className = 'font-bold text-farmGreen-700 dark:text-farmGreen-400 uppercase';
+            modalCard.className = 'bg-farmGreen-50 dark:bg-farmGreen-900/40 border border-farmGreen-100 dark:border-farmGreen-800 p-4 rounded-xl mb-4 space-y-2';
           } else {
             if (badgeText) badgeText.textContent = `LICENÇA EXPIRADA / BLOQUEADA`;
             if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-red-500';
 
             modalStatusText.textContent = 'SISTEMA BLOQUEADO (EXPIRADO)';
-            modalStatusText.className = 'font-bold text-red-600 uppercase';
-            modalCard.className = 'bg-red-50 border border-red-100 p-4 rounded-xl mb-4 space-y-2';
+            modalStatusText.className = 'font-bold text-red-600 dark:text-red-400 uppercase';
+            modalCard.className = 'bg-red-50 dark:bg-red-900/40 border border-red-100 dark:border-red-900/50 p-4 rounded-xl mb-4 space-y-2';
           }
         }
       } catch (e) {
@@ -2334,7 +2471,6 @@
       }
     }
 
-    // Submeter a Chave de Ativação (Compatível com JSON Assinado e Chave Simples)
     async function submitLicenseKey(event) {
       event.preventDefault();
       const keyInput = document.getElementById('lic-input-key').value.trim();
@@ -2346,12 +2482,9 @@
 
       try {
         let payloadToSend;
-
-        // Tenta ver se é um JSON completo (com assinatura Ed25519) ou texto plano
         try {
           payloadToSend = JSON.parse(keyInput);
         } catch (err) {
-          // Se não for JSON, envia como chave simples para retrocompatibilidade
           payloadToSend = { licenseKey: keyInput };
         }
 
@@ -2377,7 +2510,6 @@
       }
     }
 
-    // Verificar o status da licença ao iniciar o app
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         if (authToken) refreshLicenseStatus();
